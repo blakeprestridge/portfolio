@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Standings — MLD</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: { gold: { DEFAULT: '#f59e0b' } } } }
+    }
+  </script>
+
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+
+  <div id="nav-root"></div>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Page header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-black uppercase tracking-tight">Standings</h1>
+      <p class="text-slate-500 text-sm mt-1">Season records, points, and playoff results.</p>
+    </div>
+
+    <!-- Year selector -->
+    <div id="year-selector" class="flex flex-wrap gap-2 mb-8">
+      <!-- JS -->
+    </div>
+
+    <!-- Standings table (replaced by JS) -->
+    <div id="standings-container">
+      <!-- JS inserts table here -->
+    </div>
+
+    <!-- Historical grid -->
+    <div class="mt-14 mb-16">
+      <p class="section-label">All-Time History</p>
+      <div id="history-grid">
+        <!-- JS -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ---------------------------------------------------------------- -->
+  <!-- Scripts                                                           -->
+  <!-- ---------------------------------------------------------------- -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/pages/standings.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MLD — Major League Dynasty</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: { gold: { DEFAULT: '#f59e0b' } } } }
+    }
+  </script>
+
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+
+  <div id="nav-root"></div>
+
+  <!-- ---------------------------------------------------------------- -->
+  <!-- Hero                                                              -->
+  <!-- ---------------------------------------------------------------- -->
+  <section class="relative overflow-hidden" style="background:linear-gradient(135deg,#0f172a 0%,#1a2744 50%,#0f172a 100%);">
+    <!-- Subtle grid texture -->
+    <div class="absolute inset-0 pointer-events-none" style="background-image:repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(245,158,11,0.04) 60px,rgba(245,158,11,0.04) 61px),repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(245,158,11,0.04) 60px,rgba(245,158,11,0.04) 61px);"></div>
+
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+      <p class="text-gold text-xs font-bold tracking-widest uppercase mb-4">Sleeper Fantasy Football &bull; Dynasty</p>
+
+      <h1 class="text-5xl sm:text-7xl font-black uppercase tracking-tight text-white leading-none mb-3">
+        Major League<br>
+        <span class="text-gold">Dynasty</span>
+      </h1>
+
+      <p class="text-slate-500 mb-10">6 Seasons &bull; 14 Teams &bull; Est. 2020</p>
+
+      <!-- Current champion chip -->
+      <div id="hero-champion"
+           class="inline-flex items-center gap-3 px-5 py-3 rounded-2xl border"
+           style="background:rgba(30,41,59,0.8);border-color:rgba(245,158,11,0.3);">
+        <div class="skeleton rounded-full" style="width:36px;height:36px;"></div>
+        <div class="skeleton rounded" style="width:150px;height:32px;"></div>
+      </div>
+
+      <div class="mt-8 flex justify-center gap-4 flex-wrap">
+        <a href="standings.html" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm transition-all"
+           style="background:#f59e0b;color:#0f172a;">
+          View Standings
+        </a>
+        <a href="teams.html" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold text-sm border border-slate-700 text-slate-300 hover:border-slate-500 hover:text-white transition-all">
+          All Teams
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------------------------------------------------------------- -->
+  <!-- Champions row                                                     -->
+  <!-- ---------------------------------------------------------------- -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-6">
+    <p class="section-label">Hall of Champions</p>
+    <div id="champions-row" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <!-- JS -->
+    </div>
+  </section>
+
+  <!-- ---------------------------------------------------------------- -->
+  <!-- Records + Recent activity                                         -->
+  <!-- ---------------------------------------------------------------- -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8 pb-20">
+
+    <div class="lg:col-span-2">
+      <p class="section-label">League Records</p>
+      <div id="league-records" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- JS -->
+      </div>
+    </div>
+
+    <div>
+      <p class="section-label">Recent Activity</p>
+      <div id="recent-activity" class="flex flex-col gap-2">
+        <!-- JS -->
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ---------------------------------------------------------------- -->
+  <!-- Scripts                                                           -->
+  <!-- ---------------------------------------------------------------- -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/pages/home.js"></script>
+
+</body>
+</html>
