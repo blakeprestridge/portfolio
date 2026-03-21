@@ -11,7 +11,7 @@ from datetime import datetime
 from pathlib import Path
 
 from db_utils import (
-    PROJECT_ROOT, FANTASY_DIR,
+    INGESTION_DIR,
     clean_row, full_replace, season_replace, nan_to_none,
 )
 
@@ -34,7 +34,7 @@ MLD_POSITIONS = {"QB", "RB", "WR", "TE", "K", "DL", "LB", "DB"}
 
 
 def load_seasons():
-    with open(FANTASY_DIR / "mld_league_season_ids.json") as f:
+    with open(INGESTION_DIR / "mld_league_season_ids.json") as f:
         seasons = json.load(f)
     seasons.sort(key=lambda s: s["year"])
     return seasons
@@ -96,7 +96,7 @@ def build_draft_picks(rows):
 # ---------------------------------------------------------------------------
 
 def main():
-    os.chdir(FANTASY_DIR)
+    os.chdir(INGESTION_DIR)
     seasons = load_seasons()
 
     print("=" * 70)

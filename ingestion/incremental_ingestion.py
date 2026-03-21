@@ -10,7 +10,7 @@ import os
 from datetime import datetime
 
 from db_utils import (
-    FANTASY_DIR,
+    INGESTION_DIR,
     clean_row, season_replace, nan_to_none,
 )
 
@@ -33,7 +33,7 @@ MLD_POSITIONS = {"QB", "RB", "WR", "TE", "K", "DL", "LB", "DB"}
 
 
 def load_current_season():
-    with open(FANTASY_DIR / "mld_league_season_ids.json") as f:
+    with open(INGESTION_DIR / "mld_league_season_ids.json") as f:
         seasons = json.load(f)
     return max(seasons, key=lambda s: s["year"])
 
@@ -92,7 +92,7 @@ def build_draft_picks(rows):
 # ---------------------------------------------------------------------------
 
 def main():
-    os.chdir(FANTASY_DIR)
+    os.chdir(INGESTION_DIR)
     current   = load_current_season()
     year      = current["year"]
     league_id = extract_league_id(current["url"])

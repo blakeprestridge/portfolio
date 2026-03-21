@@ -8,12 +8,12 @@ import sys
 import math
 from pathlib import Path
 
-# Bootstrap Django before any model imports
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-FANTASY_DIR  = PROJECT_ROOT / "fantasy_football"
+# mld_web_app is the project root — ingestion/ is one level down
+INGESTION_DIR = Path(__file__).resolve().parent
+MLD_WEB_APP   = INGESTION_DIR.parent
 
-sys.path.insert(0, str(PROJECT_ROOT))
-sys.path.insert(0, str(FANTASY_DIR))
+sys.path.insert(0, str(MLD_WEB_APP))          # for config.settings + api.models
+sys.path.insert(0, str(INGESTION_DIR))        # for mld_utilities
 
 import django
 from django.conf import settings as django_settings
@@ -21,7 +21,6 @@ from django.conf import settings as django_settings
 if not django_settings.configured:
     import os
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
-    sys.path.insert(0, str(PROJECT_ROOT / "mld_web_app"))
     django.setup()
 
 
