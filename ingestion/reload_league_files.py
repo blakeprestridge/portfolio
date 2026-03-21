@@ -16,14 +16,13 @@ from db_utils import (
 )
 
 from api.models import (
-    Roster, Standing, Matchup, Lineup, PlayerStat,
+    Owner, Roster, Standing, Matchup, PlayerStat,
     Transaction, TransactionPlayer, TradedPick, DraftMetadata, DraftPick,
 )
 
-from mld_utilities.get_rosters      import get_season_rosters
+from mld_utilities.get_rosters      import get_season_owners, get_season_rosters
 from mld_utilities.get_matchups     import get_season_matchups
 from mld_utilities.get_standings    import get_season_standings
-from mld_utilities.get_lineups      import get_season_lineups
 from mld_utilities.get_player_stats import get_week_stats_for_season
 from mld_utilities.get_transactions import get_season_transactions
 from mld_utilities.get_traded_picks import get_season_traded_picks
@@ -48,6 +47,9 @@ def extract_league_id(url):
 # Row builders  —  dict → model instance
 # ---------------------------------------------------------------------------
 
+def build_owners(rows):
+    return [Owner(**clean_row(r)) for r in rows]
+
 def build_rosters(rows):
     return [Roster(**clean_row(r)) for r in rows]
 
@@ -56,9 +58,6 @@ def build_standings(rows):
 
 def build_matchups(rows):
     return [Matchup(**clean_row(r)) for r in rows]
-
-def build_lineups(rows):
-    return [Lineup(**clean_row(r)) for r in rows]
 
 def build_player_stats(rows):
     instances = []
@@ -105,15 +104,15 @@ def main():
     print(f"Seasons: {[s['year'] for s in seasons]}")
     print("=" * 70)
 
-    print("\nFetching all players (used by lineups, stats, transactions, drafts)...")
+    print("\nFetching all players (used by rosters, stats, transactions, drafts)...")
     all_players = Players().get_all_players()
     print(f"  {len(all_players):,} players loaded")
 
     # Collect all rows across all seasons before touching the DB
-    all_rosters, all_standings, all_matchups    = [], [], []
-    all_lineups, all_stats                      = [], []
-    all_txns, all_txn_players, all_traded_picks = [], [], []
-    all_draft_meta, all_draft_picks               = [], []
+    all_owners, all_rosters, all_standings, all_matchups = [], [], [], []
+    all_stats                                             = []
+    all_txns, all_txn_players, all_traded_picks          = [], [], []
+    all_draft_meta, all_draft_picks                      = [], []
 
     for season in seasons:
         year      = season["year"]
@@ -121,7 +120,13 @@ def main():
         print(f"\n--- {year} (league {league_id}) ---")
 
         try:
-            all_rosters  += get_season_rosters(year, league_id)
+            all_owners += get_season_owners(year, league_id)
+            print(f"  owners         OK")
+        except Exception as e:
+            print(f"  owners         FAILED: {e}")
+
+        try:
+            all_rosters += get_season_rosters(year, league_id, all_players)
             print(f"  rosters        OK")
         except Exception as e:
             print(f"  rosters        FAILED: {e}")
@@ -133,19 +138,13 @@ def main():
             print(f"  standings      FAILED: {e}")
 
         try:
-            all_matchups  += get_season_matchups(year, league_id)
+            all_matchups += get_season_matchups(year, league_id)
             print(f"  matchups       OK")
         except Exception as e:
             print(f"  matchups       FAILED: {e}")
 
         try:
-            all_lineups   += get_season_lineups(year, league_id, all_players)
-            print(f"  lineups        OK")
-        except Exception as e:
-            print(f"  lineups        FAILED: {e}")
-
-        try:
-            all_stats     += get_week_stats_for_season(year, all_players, MLD_POSITIONS)
+            all_stats += get_week_stats_for_season(year, all_players, MLD_POSITIONS)
             print(f"  player_stats   OK")
         except Exception as e:
             print(f"  player_stats   FAILED: {e}")
@@ -190,10 +189,10 @@ def main():
             results[label] = f"FAILED: {e}"
             print(f"  [FAIL]  {label:<22}  {e}")
 
+    write("owners",              Owner,             all_owners,       build_owners)
     write("rosters",             Roster,            all_rosters,      build_rosters)
     write("standings",           Standing,          all_standings,    build_standings)
     write("matchups",            Matchup,           all_matchups,     build_matchups)
-    write("lineups",             Lineup,            all_lineups,      build_lineups)
     write("player_stats",        PlayerStat,        all_stats,        build_player_stats)
     write("transactions",        Transaction,       all_txns,         build_transactions)
     write("transaction_players", TransactionPlayer, all_txn_players,  build_transaction_players)

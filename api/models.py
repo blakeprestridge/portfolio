@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class Roster(models.Model):
+class Owner(models.Model):
     year         = models.IntegerField()
     roster_id    = models.IntegerField()
     user_id      = models.BigIntegerField()
@@ -11,7 +11,7 @@ class Roster(models.Model):
     division     = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
-        db_table        = "rosters"
+        db_table        = "owners"
         unique_together = [("year", "roster_id")]
         ordering        = ["year", "roster_id"]
 
@@ -68,7 +68,7 @@ class Matchup(models.Model):
         return f"{self.year} W{self.week} — roster {self.roster_id} vs {self.opponent_roster_id}"
 
 
-class Lineup(models.Model):
+class Roster(models.Model):
     year            = models.IntegerField()
     week            = models.IntegerField()
     roster_id       = models.IntegerField()
@@ -77,15 +77,16 @@ class Lineup(models.Model):
     player_position = models.CharField(max_length=20)
     mapped_position = models.CharField(max_length=20)
     lineup_slot     = models.CharField(max_length=20)
+    is_starter      = models.BooleanField(default=False)
     points          = models.FloatField(default=0)
 
     class Meta:
-        db_table        = "lineups"
+        db_table        = "rosters"
         unique_together = [("year", "week", "roster_id", "player_id")]
         ordering        = ["year", "week", "roster_id"]
 
     def __str__(self):
-        return f"{self.year} W{self.week} — {self.player_name} ({self.lineup_slot})"
+        return f"{self.year} W{self.week} — {self.player_name} ({'starter' if self.is_starter else 'bench'})"
 
 
 class PlayerStat(models.Model):
@@ -161,8 +162,6 @@ class PlayerStat(models.Model):
 
     def __str__(self):
         return f"{self.year} W{self.week} — {self.player_name} ({self.fantasy_points} pts)"
-
-
 
 
 class Transaction(models.Model):

@@ -1,151 +1,169 @@
 """
 get_rosters.py
 
-Fetches roster and owner data for all seasons of the Major League Dynasty league.
-Returns a dataset with roster_id, owner info, team names, and division assignments.
+Fetches owner/team info and full weekly roster data for all MLD seasons.
+
+get_season_owners() — one row per team per year (display_name, team_name, etc.)
+get_season_rosters() — one row per player per team per week, including bench players,
+                       with points sourced from players_points (not just starters_points)
 """
 
-import json
-import pandas as pd
 from sleeper_wrapper import League
 
 
-def extract_league_id(url):
-    """Extract league ID from Sleeper API URL"""
-    return url.split('/')[5]
+POSITION_MAP = {
+    # Defensive Line
+    'DT': 'DL', 'DE': 'DL', 'DL': 'DL',
+    # Defensive Back
+    'CB': 'DB', 'S': 'DB', 'DB': 'DB',
+    # Linebacker
+    'LB': 'LB',
+    # Offensive
+    'QB': 'QB', 'RB': 'RB', 'WR': 'WR', 'TE': 'TE', 'K': 'K',
+    # Flex / special
+    'FLEX': 'FLEX', 'SUPER_FLEX': 'SUPER_FLEX',
+    'IDP_FLEX': 'IDP_FLEX', 'DEF': 'DEF',
+}
 
 
-def get_season_rosters(year, league_id):
+def map_position(position):
+    return POSITION_MAP.get(position, position)
+
+
+# ---------------------------------------------------------------------------
+# Owner data (replaces old get_season_rosters)
+# ---------------------------------------------------------------------------
+
+def get_season_owners(year, league_id):
     """
-    Fetch roster data for a given season
-
-    Parameters:
-    - year: Season year
-    - league_id: Sleeper league ID
-
-    Returns:
-    - List of dictionaries with roster information
+    Returns one row per team per season with owner/team metadata.
+    Fields: year, roster_id, user_id, display_name, team_name, avatar, division
     """
-    league = League(league_id)
-
-    # Get rosters and users
-    rosters = league.get_rosters()
-    users = league.get_users()
+    league      = League(league_id)
+    rosters     = league.get_rosters()
+    users       = league.get_users()
     league_info = league.get_league()
 
-    # Create a mapping of owner_id to user info
-    user_map = {user['user_id']: user for user in users}
+    user_map = {u['user_id']: u for u in users}
 
-    # Get division names from league metadata
     division_names = {}
-    if league_info.get('metadata'):
-        if 'division_1' in league_info['metadata']:
-            division_names[1] = league_info['metadata']['division_1']
-        if 'division_2' in league_info['metadata']:
-            division_names[2] = league_info['metadata']['division_2']
+    metadata = league_info.get('metadata') or {}
+    if 'division_1' in metadata:
+        division_names[1] = metadata['division_1']
+    if 'division_2' in metadata:
+        division_names[2] = metadata['division_2']
 
-    # Extract roster data
-    roster_data = []
+    rows = []
     for roster in rosters:
-        owner_id = roster['owner_id']
+        owner_id  = roster['owner_id']
         user_info = user_map.get(owner_id, {})
 
         display_name = user_info.get('display_name', 'Unknown')
-        team_name = user_info.get('metadata', {}).get('team_name', None) if user_info.get('metadata') else None
-
-        # Default team_name to "Team {display_name}" if blank or None
-        if not team_name or team_name.strip() == '':
+        team_name    = (user_info.get('metadata') or {}).get('team_name') or None
+        if not team_name or not team_name.strip():
             team_name = f"Team {display_name}"
 
-        # Get division number from roster settings and map to division name
-        division_num = roster.get('settings', {}).get('division', None)
-        division_name = division_names.get(division_num, None) if division_num else None
+        division_num  = (roster.get('settings') or {}).get('division')
+        division_name = division_names.get(division_num) if division_num else None
 
-        roster_entry = {
-            'year': year,
-            'roster_id': roster['roster_id'],
-            'user_id': owner_id,
+        rows.append({
+            'year':         year,
+            'roster_id':    roster['roster_id'],
+            'user_id':      owner_id,
             'display_name': display_name,
-            'team_name': team_name,
-            'avatar': user_info.get('avatar', None),
-            'division': division_name
-        }
-        roster_data.append(roster_entry)
+            'team_name':    team_name,
+            'avatar':       user_info.get('avatar'),
+            'division':     division_name,
+        })
 
-    return roster_data
-
-
-def main():
-    """Main function to fetch all roster data"""
-
-    # Load league IDs from JSON file
-    import os
-
-    # Support running from either project root or fantasy_football directory
-    if os.path.exists('fantasy_football/mld_league_season_ids.json'):
-        league_file = 'fantasy_football/mld_league_season_ids.json'
-    else:
-        league_file = 'mld_league_season_ids.json'
-
-    with open(league_file, 'r') as f:
-        league_data = json.load(f)
-
-    print(f"Fetching roster data for {len(league_data)} seasons...")
-    print("=" * 60)
-
-    all_rosters = []
-
-    for season in league_data:
-        year = season['year']
-        league_id = extract_league_id(season['url'])
-
-        print(f"\n{year} (League ID: {league_id})")
-
-        try:
-            season_rosters = get_season_rosters(year, league_id)
-            all_rosters.extend(season_rosters)
-
-            print(f"  [OK] Retrieved {len(season_rosters)} rosters")
-
-        except Exception as e:
-            print(f"  [ERROR] {e}")
-
-    # Create DataFrame
-    df = pd.DataFrame(all_rosters)
-
-    print("\n" + "=" * 60)
-    print(f"Total roster records collected: {len(df)}")
-    print(f"\nDataset shape: {df.shape}")
-    print(f"\nColumns: {df.columns.tolist()}")
-
-    # Display sample data
-    print("\nSample data (2025 season):")
-    if len(df[df['year'] == 2025]) > 0:
-        print(df[df['year'] == 2025][['year', 'roster_id', 'display_name', 'team_name', 'division']].head(10))
-    else:
-        print(df.head(10))
-
-    # Show summary statistics
-    print("\n" + "=" * 60)
-    print("ROSTERS BY SEASON:")
-    print("=" * 60)
-    print(df.groupby('year').size())
-
-    print("\n" + "=" * 60)
-    print(f"Unique managers across all seasons: {df['display_name'].nunique()}")
-
-    # Save to CSV
-    # Support running from either project root or fantasy_football directory
-    if os.path.exists('fantasy_football/mld_base_tables'):
-        output_file = 'fantasy_football/mld_base_tables/rosters.csv'
-    else:
-        output_file = 'mld_base_tables/rosters.csv'
-
-    df.to_csv(output_file, index=False)
-    print(f"\n[OK] Data saved to {output_file}")
-
-    return df
+    return rows
 
 
-if __name__ == "__main__":
-    df = main()
+# ---------------------------------------------------------------------------
+# Full weekly roster data (replaces old get_season_lineups)
+# ---------------------------------------------------------------------------
+
+def get_season_rosters(year, league_id, all_players):
+    """
+    Returns one row per player per team per week, covering every rostered player
+    (starters + bench).  Points come from players_points so bench players have
+    their actual fantasy-point totals.
+
+    Fields: year, week, roster_id, player_id, player_name, player_position,
+            mapped_position, lineup_slot, is_starter, points
+    """
+    league           = League(league_id)
+    league_info      = league.get_league()
+    roster_positions = league_info.get('roster_positions', [])
+
+    # Build taxi / IR maps from current roster state (best available — no week-by-week history)
+    taxi_players = set()
+    ir_players   = set()
+    for r in league.get_rosters():
+        for pid in (r.get('taxi') or []):
+            taxi_players.add(str(pid))
+        for pid in (r.get('reserve') or []):
+            ir_players.add(str(pid))
+
+    rows = []
+
+    for week in range(1, 19):
+        matchups = league.get_matchups(week)
+
+        if not matchups:
+            break
+
+        # Stop once we hit a week with no scored points
+        if not any((m.get('points') or 0) > 0 for m in matchups):
+            break
+
+        for matchup in matchups:
+            roster_id      = matchup.get('roster_id')
+            starters       = matchup.get('starters') or []
+            players        = matchup.get('players') or []
+            players_points = matchup.get('players_points') or {}
+
+            # Map each starter player_id → the lineup slot it fills
+            starter_slots = {}
+            for slot_idx, pid in enumerate(starters):
+                if pid and pid != "0":
+                    slot = roster_positions[slot_idx] if slot_idx < len(roster_positions) else 'UNKNOWN'
+                    starter_slots[pid] = slot
+
+            starters_set = set(starter_slots.keys())
+
+            for player_id in players:
+                if not player_id or player_id == "0":
+                    continue
+
+                player_info     = all_players.get(str(player_id)) or {}
+                player_position = player_info.get('position', 'UNKNOWN')
+                player_name     = player_info.get('full_name', 'Unknown Player')
+                mapped_position = map_position(player_position)
+
+                is_starter = player_id in starters_set
+                if is_starter:
+                    lineup_slot = starter_slots[player_id]
+                elif player_id in taxi_players:
+                    lineup_slot = 'TAXI'
+                elif player_id in ir_players:
+                    lineup_slot = 'IR'
+                else:
+                    lineup_slot = 'BN'
+
+                points = players_points.get(str(player_id)) or 0
+
+                rows.append({
+                    'year':            year,
+                    'week':            week,
+                    'roster_id':       roster_id,
+                    'player_id':       str(player_id),
+                    'player_name':     player_name,
+                    'player_position': player_position,
+                    'mapped_position': mapped_position,
+                    'lineup_slot':     lineup_slot,
+                    'is_starter':      is_starter,
+                    'points':          points,
+                })
+
+    return rows
