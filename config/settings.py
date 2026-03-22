@@ -1,6 +1,19 @@
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+import socket
+
+
+def _resolve_ipv4(host):
+    """Resolve hostname to its IPv4 address to avoid IPv6 on Railway."""
+    if not host:
+        return host
+    try:
+        for _, _, _, _, addr in socket.getaddrinfo(host, None, socket.AF_INET):
+            return addr[0]
+    except Exception:
+        pass
+    return host
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -42,7 +55,7 @@ DATABASES = {
         "NAME":     "postgres",
         "USER":     os.environ.get("DB_USER", "postgres"),
         "PASSWORD": os.environ.get("DB_PASSWORD", ""),
-        "HOST":     os.environ.get("DB_HOST", ""),
+        "HOST":     _resolve_ipv4(os.environ.get("DB_HOST", "")),
         "PORT":     os.environ.get("DB_PORT", "5432"),
     }
 }
