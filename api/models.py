@@ -192,7 +192,7 @@ class TransactionPlayer(models.Model):
     transaction_id  = models.BigIntegerField()
     type            = models.CharField(max_length=20)
     action          = models.CharField(max_length=10)   # add / drop
-    player_id       = models.CharField(max_length=20)
+    player_id       = models.CharField(max_length=100)
     player_name     = models.CharField(max_length=100)
     player_position = models.CharField(max_length=20)
     roster_id       = models.IntegerField()
