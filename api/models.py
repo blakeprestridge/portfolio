@@ -170,7 +170,8 @@ class Transaction(models.Model):
     transaction_id   = models.BigIntegerField(unique=True)
     type             = models.CharField(max_length=20)   # trade / waiver / free_agent
     status           = models.CharField(max_length=20)   # complete / failed
-    created          = models.BigIntegerField(blank=True, null=True)  # epoch ms
+    created          = models.DateTimeField(blank=True, null=True)
+    status_updated   = models.DateTimeField(blank=True, null=True)
     roster_ids       = models.CharField(max_length=200, blank=True, null=True)
     num_adds         = models.IntegerField(default=0)
     num_drops        = models.IntegerField(default=0)

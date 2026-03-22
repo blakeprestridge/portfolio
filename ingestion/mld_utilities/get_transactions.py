@@ -12,7 +12,18 @@ Creates two output tables:
 import json
 import os
 import pandas as pd
+from datetime import datetime, timezone
 from sleeper_wrapper import League, Players
+
+
+def _epoch_ms_to_dt(epoch_ms):
+    """Convert Sleeper epoch milliseconds to a UTC datetime, or None."""
+    if epoch_ms is None:
+        return None
+    try:
+        return datetime.fromtimestamp(int(epoch_ms) / 1000, tz=timezone.utc)
+    except Exception:
+        return None
 
 
 def extract_league_id(url):
@@ -54,7 +65,8 @@ def get_season_transactions(year, league_id, player_map):
 
                 txn_type = txn.get('type')       # trade, waiver, free_agent
                 txn_status = txn.get('status')   # complete, failed
-                created = txn.get('created')     # epoch ms
+                created = _epoch_ms_to_dt(txn.get('created'))
+                status_updated = _epoch_ms_to_dt(txn.get('status_updated'))
 
                 roster_ids = txn.get('roster_ids') or []
 
@@ -76,6 +88,7 @@ def get_season_transactions(year, league_id, player_map):
                     'type': txn_type,
                     'status': txn_status,
                     'created': created,
+                    'status_updated': status_updated,
                     'roster_ids': ','.join(str(r) for r in roster_ids),
                     'num_adds': len(adds),
                     'num_drops': len(drops),
