@@ -23,6 +23,11 @@ if not django_settings.configured:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
     django.setup()
 
+# DEBUG: print DB connection info to Railway logs
+from django.conf import settings as _s
+_db = _s.DATABASES["default"]
+print(f"[DB DEBUG] HOST={_db['HOST']} PORT={_db['PORT']} USER={_db['USER']} NAME={_db['NAME']}", flush=True)
+
 
 def nan_to_none(val):
     """Convert NaN/float nan to None for DB compatibility."""
