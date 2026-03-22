@@ -112,7 +112,7 @@ function renderStandingsBody(rows, ownerMap, year) {
           <div class="flex items-center gap-2">
             ${avatarImg(owner.avatar, owner.display_name, 32)}
             <div class="min-w-0">
-              <div class="font-semibold text-white truncate-name">${esc(owner.team_name || owner.display_name)}</div>
+              <div class="font-semibold truncate-name" style="color:#0D0F11;">${esc(owner.team_name || owner.display_name)}</div>
               <div class="text-xs text-slate-500 truncate-name">${esc(owner.display_name)}</div>
             </div>
           </div>
@@ -174,7 +174,7 @@ function renderHistoricalGrid(standings, owners) {
   const years = SEASONS.filter(y => standings.some(s => s.year === y));
 
   const headerCols = years.map(y =>
-    `<th style="padding:0.5rem 0.75rem;text-align:center;font-size:0.7rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:#64748b;white-space:nowrap;">${y}</th>`
+    `<th style="padding:0.5rem 0.75rem;text-align:center;font-size:0.7rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:#6b7280;white-space:nowrap;">${y}</th>`
   ).join('');
 
   const rows = latestRosters.map(lr => {
@@ -182,7 +182,7 @@ function renderHistoricalGrid(standings, owners) {
 
     const cells = years.map(y => {
       const s = (lookup[y] || {})[lr.roster_id];
-      if (!s) return `<td class="hist-cell-empty" style="padding:0.4rem 0.75rem;text-align:center;font-size:0.75rem;border-bottom:1px solid #1e293b;">—</td>`;
+      if (!s) return `<td class="hist-cell-empty" style="padding:0.4rem 0.75rem;text-align:center;font-size:0.75rem;border-bottom:1px solid #e5e7eb;">—</td>`;
 
       let cls = 'hist-cell-none';
       if (s.champion)          cls = 'hist-cell-champion';
@@ -191,17 +191,17 @@ function renderHistoricalGrid(standings, owners) {
 
       const icon = s.champion ? ' &#127942;' : s.runner_up ? ' &#129352;' : '';
 
-      return `<td class="${cls}" style="padding:0.4rem 0.75rem;text-align:center;font-size:0.75rem;font-weight:600;border-bottom:1px solid #1e293b;white-space:nowrap;">
+      return `<td class="${cls}" style="padding:0.4rem 0.75rem;text-align:center;font-size:0.75rem;font-weight:600;border-bottom:1px solid #e5e7eb;white-space:nowrap;">
         ${formatRecord(s.wins, s.losses, s.ties)}${icon}
       </td>`;
     }).join('');
 
     return `
       <tr>
-        <td style="padding:0.4rem 1rem;white-space:nowrap;border-bottom:1px solid #1e293b;">
+        <td style="padding:0.4rem 1rem;white-space:nowrap;border-bottom:1px solid #e5e7eb;">
           <div style="display:flex;align-items:center;gap:8px;">
             ${avatarImg(owner.avatar, owner.display_name, 24)}
-            <span style="font-size:0.8rem;font-weight:600;color:#e2e8f0;">${esc(owner.display_name)}</span>
+            <span style="font-size:0.8rem;font-weight:600;color:#0D0F11;">${esc(owner.display_name)}</span>
           </div>
         </td>
         ${cells}

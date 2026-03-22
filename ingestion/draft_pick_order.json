@@ -1,0 +1,35 @@
+   {
+    "2026": [
+      { "pick_in_round": 1, "original_roster_id": 2},
+      { "pick_in_round": 2, "original_roster_id": 6},
+      { "pick_in_round": 3, "original_roster_id": 8},
+      { "pick_in_round": 4, "original_roster_id": 12},
+      { "pick_in_round": 5, "original_roster_id": 7},
+      { "pick_in_round": 6, "original_roster_id": 10},
+      { "pick_in_round": 7, "original_roster_id": 13},
+      { "pick_in_round": 8, "original_roster_id": 14},
+      { "pick_in_round": 9, "original_roster_id": 11},
+      { "pick_in_round": 10, "original_roster_id": 4},
+      {"pick_in_round": 11, "original_roster_id": 1},
+      { "pick_in_round": 12, "original_roster_id": 9},
+      {"pick_in_round": 13, "original_roster_id": 3},
+      {"pick_in_round": 14, "original_roster_id": 5}
+    ],
+         "2025": [
+      {"pick_in_round": 1, "original_roster_id": 8},
+      { "pick_in_round": 2, "original_roster_id": 6},
+      { "pick_in_round": 3, "original_roster_id": 13},
+      { "pick_in_round": 4, "original_roster_id": 12},
+           { "pick_in_round": 5, "original_roster_id": 11},
+           {  "pick_in_round": 6, "original_roster_id": 2},
+      { "pick_in_round": 7, "original_roster_id": 14},
+      { "pick_in_round": 8, "original_roster_id": 4},
+           {"pick_in_round": 9, "original_roster_id": 7},
+      { "pick_in_round": 10, "original_roster_id": 5},
+      { "pick_in_round": 11, "original_roster_id": 3},
+      { "pick_in_round": 12, "original_roster_id": 1},
+      { "pick_in_round": 13, "original_roster_id": 10},
+      { "pick_in_round": 14, "original_roster_id": 9}
+    ]
+  }
+

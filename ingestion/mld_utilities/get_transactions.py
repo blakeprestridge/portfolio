@@ -30,7 +30,51 @@ def extract_league_id(url):
     return url.split('/')[5]
 
 
-def get_season_transactions(year, league_id, player_map):
+def load_pick_map():
+    """
+    Load draft_pick_order.json from the ingestion directory or project root.
+    Builds a lookup dict keyed by (season_str, round, original_roster_id)
+    -> {pick_in_round, overall}.
+    Returns an empty dict if the file doesn't exist.
+    """
+    script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    candidates = [
+        os.path.join(script_dir, 'draft_pick_order.json'),
+        os.path.join(os.getcwd(), 'draft_pick_order.json'),
+        os.path.join(os.getcwd(), 'fantasy_football', 'draft_pick_order.json'),
+    ]
+    path = next((p for p in candidates if os.path.exists(p)), None)
+    if not path:
+        return {}
+    with open(path, 'r') as f:
+        raw = json.load(f)
+    pick_map = {}
+    for season_str, picks in raw.items():
+        num_teams = len(picks)  # one entry per team per season
+        for p in picks:
+            key = (season_str, int(p['original_roster_id']))
+            pick_map[key] = (int(p['pick_in_round']), num_teams)
+    return pick_map
+
+
+def load_owner_map(base_dir):
+    """
+    Load owners.csv and build a lookup dict keyed by
+    (year_str, roster_id) -> display_name.
+    Returns an empty dict if the file doesn't exist.
+    """
+    path = os.path.join(base_dir, 'owners.csv')
+    if not os.path.exists(path):
+        return {}
+    df = pd.read_csv(path, dtype={'roster_id': int, 'year': int})
+    owner_map = {}
+    for _, row in df.iterrows():
+        key = (str(row['year']), int(row['roster_id']))
+        owner_map[key] = row['display_name']
+    return owner_map
+
+
+def get_season_transactions(year, league_id, player_map, pick_map=None, owner_map=None):
     """
     Fetch all transactions for a season across all weeks.
 
@@ -42,6 +86,8 @@ def get_season_transactions(year, league_id, player_map):
     Returns:
     - (transaction_rows, player_rows): lists of dicts
     """
+    pick_map  = pick_map  or {}
+    owner_map = owner_map or {}
     league = League(league_id)
 
     transaction_rows = []
@@ -128,6 +174,57 @@ def get_season_transactions(year, league_id, player_map):
                         'faab_bid': None,
                     })
 
+                # Draft pick rows: one add (receiver) + one drop (sender) per pick
+                for pick in draft_picks:
+                    pick_season    = str(pick.get('season', year))
+                    pick_round     = pick.get('round', '?')
+                    orig_roster_id = pick.get('roster_id')
+                    receiver_id    = pick.get('owner_id')
+                    sender_id      = pick.get('previous_owner_id')
+
+                    map_key  = (pick_season, int(orig_roster_id)) if orig_roster_id else None
+                    map_info = pick_map.get(map_key) if map_key else None
+
+                    if map_info:
+                        pick_in_round, num_teams = map_info
+                        overall    = (int(pick_round) - 1) * num_teams + pick_in_round
+                        round_str  = f"{pick_round}.{str(pick_in_round).zfill(2)}"
+                        pick_id    = f"pick_{pick_season}_r{pick_round}_p{overall}"
+                        pick_name  = f"{pick_season} Pick {round_str}"
+                    else:
+                        owner_key    = (pick_season, int(orig_roster_id)) if orig_roster_id else None
+                        display_name = owner_map.get(owner_key, f"Roster{orig_roster_id}") if owner_key else f"Roster{orig_roster_id}"
+                        safe_name    = display_name.replace(' ', '_')
+                        pick_id   = f"pick_{pick_season}_r{pick_round}_{safe_name}"
+                        pick_name = f"{pick_season} {display_name} Round {pick_round}"
+
+                    if receiver_id:
+                        player_rows.append({
+                            'year': year,
+                            'week': week,
+                            'transaction_id': txn_id,
+                            'type': txn_type,
+                            'action': 'add',
+                            'player_id': pick_id,
+                            'player_name': pick_name,
+                            'player_position': 'PICK',
+                            'roster_id': receiver_id,
+                            'faab_bid': None,
+                        })
+                    if sender_id:
+                        player_rows.append({
+                            'year': year,
+                            'week': week,
+                            'transaction_id': txn_id,
+                            'type': txn_type,
+                            'action': 'drop',
+                            'player_id': pick_id,
+                            'player_name': pick_name,
+                            'player_position': 'PICK',
+                            'roster_id': sender_id,
+                            'faab_bid': None,
+                        })
+
         except Exception:
             # Some weeks simply don't exist for a given league/season
             pass
@@ -155,6 +252,11 @@ def main():
     print(f"\nFetching transactions for {len(league_data)} seasons...")
     print("=" * 60)
 
+    pick_map  = load_pick_map()
+    owner_map = load_owner_map(base_dir)
+    print(f"[OK] Loaded {len(pick_map)} pick mappings from draft_pick_order.json" if pick_map else "[--] No draft_pick_order.json found — picks will use fallback IDs")
+    print(f"[OK] Loaded {len(owner_map)} owner display names")
+
     all_transactions = []
     all_player_moves = []
 
@@ -165,7 +267,7 @@ def main():
         print(f"\n{year} (League ID: {league_id})")
 
         try:
-            txn_rows, player_rows = get_season_transactions(year, league_id, all_players)
+            txn_rows, player_rows = get_season_transactions(year, league_id, all_players, pick_map, owner_map)
             all_transactions.extend(txn_rows)
             all_player_moves.extend(player_rows)
 
