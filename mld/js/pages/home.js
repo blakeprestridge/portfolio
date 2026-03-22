@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.db.from('owners')
                 .select('year,roster_id,display_name,team_name,avatar'),
             window.db.from('transaction_players')
-                .select('year,week,transaction_id,type,action,player_name,player_position,roster_id')
+                .select('year,week,transaction_id,type,action,player_name,player_position,nfl_team,roster_id')
                 .order('year', {ascending: false})
                 .order('week', {ascending: false})
                 .order('transaction_id', {ascending: false})
@@ -228,13 +228,13 @@ function renderRecentActivity(txns, ownerMap, txnMetaMap) {
 
     // Sort by transaction_id desc, take 10 most recent (TODO: remove trade filter)
     const txns10 = [...txnMap.values()]
-        .filter(t => t.type === 'trade')
+        // .filter(t => t.type === 'trade')
         .sort((a, b) => b.transaction_id - a.transaction_id)
         .slice(0, 10);
 
     const assetLine = row =>
         `<div style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#0D0F11;">
-           ${positionBadge(row.player_position)} ${esc(row.player_name)}
+           ${nflTeamLogo(row.nfl_team)} ${positionBadge(row.player_position)} ${esc(row.player_name)}
          </div>`;
 
     el.innerHTML = txns10.map(txn => {
@@ -255,8 +255,8 @@ function renderRecentActivity(txns, ownerMap, txnMetaMap) {
                 const owner = getOwner(ownerMap, txn.year, side.roster_id);
                 return `
                 <div style="margin-bottom:0.5rem;">
-                  <div style="font-size:0.75rem;font-weight:600;color:#0D0F11;margin-bottom:0.2rem;">
-                    ${esc(owner.display_name)} receives:
+                  <div style="font-size:0.75rem;font-weight:600;color:#0D0F11;margin-bottom:0.2rem;display:flex;align-items:center;gap:0.4rem;">
+                    ${avatarImg(owner.avatar, owner.display_name, 20)} <img src="images/trade_light_gray.png" alt="trade" style="width:18px;height:auto;flex-shrink:0;"> ${esc(owner.display_name)} receives:
                   </div>
                   <div style="display:flex;flex-direction:column;gap:0.15rem;padding-left:0.5rem;">
                     ${side.adds.map(assetLine).join('') || '<div style="font-size:0.8rem;color:#94a3b8;">—</div>'}
@@ -272,8 +272,8 @@ function renderRecentActivity(txns, ownerMap, txnMetaMap) {
 
             headerHtml = `
               <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.4rem;">
-                <span style="font-size:0.8rem;font-weight:600;color:#0D0F11;">
-                  ${esc(owner.display_name)} has made a
+                <span style="font-size:0.8rem;font-weight:400;color:#0D0F11;display:inline-flex;align-items:center;gap:0.4rem;">
+                  ${avatarImg(owner.avatar, owner.display_name, 20)} <span style="font-weight:700;">${esc(owner.display_name)}</span> has made a
                   <span style="color:${typeColor};">${typeLabel}</span> move:
                 </span>
                 <span style="font-size:0.7rem;color:#94a3b8;">${dateStr}</span>
@@ -281,8 +281,8 @@ function renderRecentActivity(txns, ownerMap, txnMetaMap) {
 
             bodyHtml = `
               <div style="display:flex;flex-direction:column;gap:0.15rem;">
-                ${side.adds.map(r => `<div style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#0D0F11;"><span style="font-size:0.6rem;font-weight:700;color:#10b981;min-width:3.5rem;">ADDED</span>${positionBadge(r.player_position)} ${esc(r.player_name)}</div>`).join('')}
-                ${side.drops.map(r => `<div style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#0D0F11;"><span style="font-size:0.6rem;font-weight:700;color:#ef4444;min-width:3.5rem;">DROPPED</span>${positionBadge(r.player_position)} ${esc(r.player_name)}</div>`).join('')}
+                ${side.adds.map(r => `<div style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#0D0F11;"><span style="font-size:1rem;font-weight:900;color:#10b981;line-height:1;">+</span>${positionBadge(r.player_position)} ${esc(r.player_name)}</div>`).join('')}
+                ${side.drops.map(r => `<div style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#0D0F11;"><span style="font-size:1rem;font-weight:900;color:#ef4444;line-height:1;">−</span>${positionBadge(r.player_position)} ${esc(r.player_name)}</div>`).join('')}
               </div>`;
         }
 

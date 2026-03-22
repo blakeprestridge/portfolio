@@ -7,6 +7,13 @@ function avatarUrl(hash) {
   return `https://sleepercdn.com/avatars/thumbs/${hash}`;
 }
 
+function nflTeamLogo(team, sizePx = 20) {
+  if (!team) return '';
+  const url = `https://sleepercdn.com/images/team_logos/nfl/${team.toLowerCase()}.jpg`;
+  const style = `width:${sizePx}px;height:${sizePx}px;min-width:${sizePx}px;border-radius:2px;object-fit:contain;`;
+  return `<img src="${url}" alt="${esc(team)}" style="${style}" onerror="this.style.display='none'">`;
+}
+
 /** Renders a circular avatar image, falling back to initials on error. */
 function avatarImg(hash, name, sizePx = 32) {
   const url = avatarUrl(hash);

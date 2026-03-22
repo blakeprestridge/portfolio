@@ -195,6 +195,7 @@ class TransactionPlayer(models.Model):
     player_id       = models.CharField(max_length=100)
     player_name     = models.CharField(max_length=100)
     player_position = models.CharField(max_length=20)
+    nfl_team        = models.CharField(max_length=10, blank=True, null=True)
     roster_id       = models.IntegerField()
     faab_bid        = models.FloatField(blank=True, null=True)
 

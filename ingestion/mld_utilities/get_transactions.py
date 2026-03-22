@@ -154,6 +154,7 @@ def get_season_transactions(year, league_id, player_map, pick_map=None, owner_ma
                         'player_id': player_id,
                         'player_name': info.get('full_name', 'Unknown'),
                         'player_position': info.get('position', 'UNKNOWN'),
+                        'nfl_team': info.get('team', None),
                         'roster_id': roster_id,
                         'faab_bid': faab_bid if txn_type == 'waiver' else None,
                     })
@@ -170,6 +171,7 @@ def get_season_transactions(year, league_id, player_map, pick_map=None, owner_ma
                         'player_id': player_id,
                         'player_name': info.get('full_name', 'Unknown'),
                         'player_position': info.get('position', 'UNKNOWN'),
+                        'nfl_team': info.get('team', None),
                         'roster_id': roster_id,
                         'faab_bid': None,
                     })
