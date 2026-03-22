@@ -1,4 +1,8 @@
   [
+     {
+      "year": 2026,
+      "url": "https://api.sleeper.app/v1/league/1312966251391234048/matchups/"
+    },
     {
       "year": 2025,
       "url": "https://api.sleeper.app/v1/league/1181341052506275840/matchups/"
