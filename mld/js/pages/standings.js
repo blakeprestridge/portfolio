@@ -1,6 +1,11 @@
-let selectedYear = CURRENT_YEAR;
-let allStandings = null; // cached for historical grid
-let allOwners    = null;
+let selectedYear   = CURRENT_YEAR;
+let allStandings   = null; // cached for historical grid
+let allOwners      = null;
+let isExpanded     = false;
+let cachedRows     = null;
+let cachedOwnerMap = null;
+let cachedYear     = null;
+let cachedPlayoffs = true;
 
 document.addEventListener('DOMContentLoaded', async () => {
   renderNav('standings');
@@ -55,59 +60,88 @@ async function loadStandingsForYear(year) {
     <div class="card overflow-hidden">
       <table class="data-table">
         <thead><tr>
-          <th style="width:40px">#</th>
-          <th>Team</th>
-          <th class="hidden sm:table-cell">Division</th>
-          <th>W-L</th>
-          <th class="hidden md:table-cell">Win%</th>
-          <th>PF</th>
-          <th class="hidden md:table-cell">PA</th>
-          <th class="hidden md:table-cell">+/-</th>
+          <th style="width:40px">#</th><th>Team</th><th>W-L</th>
+          <th class="hidden md:table-cell">Win%</th><th>PF</th>
+          <th class="hidden md:table-cell">PA</th><th class="hidden md:table-cell">+/-</th>
           <th>Status</th>
         </tr></thead>
-        <tbody id="standings-body">${skeletonRows(14, 9)}</tbody>
+        <tbody>${skeletonRows(14, 8)}</tbody>
       </table>
     </div>`;
 
   try {
-    const [{ data: rows, error: e1 }, { data: owners, error: e2 }] = await Promise.all([
+    const [{ data: rows, error: e1 }, { data: owners, error: e2 }, { data: weekRows, error: e3 }] = await Promise.all([
       window.db.from('standings').select('*').eq('year', year).order('overall_rank'),
       window.db.from('owners').select('year,roster_id,display_name,team_name,avatar,division').eq('year', year),
+      window.db.from('matchups').select('week').eq('year', year).gt('points', 0).order('week', {ascending: false}).limit(1),
     ]);
-    if (e1 || e2) throw e1 || e2;
+    if (e1 || e2 || e3) throw e1 || e2 || e3;
+
+    const currentWeek      = weekRows?.[0]?.week ?? 0;
+    const playoffStartWeek = year <= 2020 ? 14 : 15;
+    const playoffsStarted  = currentWeek >= playoffStartWeek;
 
     const ownerMap = buildOwnerMap(owners);
-    renderStandingsBody(rows, ownerMap, year);
+    cachedRows     = rows;
+    cachedOwnerMap = ownerMap;
+    cachedYear     = year;
+    cachedPlayoffs = playoffsStarted;
+    renderStandingsBody(rows, ownerMap, year, playoffsStarted);
   } catch (err) {
     console.error(err);
-    document.getElementById('standings-body').innerHTML =
-      `<tr><td colspan="9" class="px-4 py-8 text-center text-red-400">Failed to load standings.</td></tr>`;
+    container.innerHTML = `<p class="text-red-400 text-sm px-4 py-8">Failed to load standings.</p>`;
   }
 }
 
-function renderStandingsBody(rows, ownerMap, year) {
-  const tbody = document.getElementById('standings-body');
-  if (!rows?.length) {
-    tbody.innerHTML = `<tr><td colspan="9" class="px-4 py-8 text-center text-slate-500">No data for ${year}.</td></tr>`;
-    return;
-  }
+function standingsRow(s, owner, rank, playoffsStarted = true) {
+  const winPct = s.wins + s.losses + (s.ties || 0) > 0
+    ? ((s.wins + (s.ties || 0) * 0.5) / (s.wins + s.losses + (s.ties || 0))).toFixed(3).replace(/^0/, '')
+    : '.000';
+  const diff = (s.points_for || 0) - (s.points_against || 0);
 
-  tbody.innerHTML = rows.map((s, i) => {
-    const owner   = getOwner(ownerMap, year, s.roster_id);
-    const winPct  = s.wins + s.losses + (s.ties || 0) > 0
-      ? ((s.wins + (s.ties || 0) * 0.5) / (s.wins + s.losses + (s.ties || 0))).toFixed(3).replace(/^0/, '')
-      : '.000';
-    const diff    = (s.points_for || 0) - (s.points_against || 0);
+  const badges = [];
+  if (s.champion)                                                    badges.push(`<span class="badge badge-champion">&#127942; Champ</span>`);
+  if (s.runner_up)                                                   badges.push(`<span class="badge badge-runnerup">&#129352; Runner-up</span>`);
+  if (s.div_champ)                                                   badges.push(divChampBadge(s.division || owner.division));
+  if (s.made_playoffs && !s.champion && !s.runner_up && playoffsStarted) badges.push(`<span class="badge badge-playoffs">Playoffs</span>`);
 
+  return `
+    <tr>
+      <td class="text-slate-500 font-mono text-sm">${rank}</td>
+      <td>
+        <div class="flex items-center gap-2">
+          ${avatarImg(owner.avatar, owner.display_name, 32)}
+          <div class="min-w-0">
+            <div class="font-semibold truncate-name" style="color:#0D0F11;">${esc(owner.team_name || owner.display_name)}</div>
+            <div class="text-xs text-slate-500 truncate-name">${esc(owner.display_name)}</div>
+          </div>
+        </div>
+      </td>
+      <td class="font-semibold">${formatRecord(s.wins, s.losses, s.ties)}</td>
+      <td class="hidden md:table-cell text-slate-400 font-mono text-sm">${winPct}</td>
+      <td class="font-mono text-sm">${formatPts(s.points_for)}</td>
+      <td class="hidden md:table-cell font-mono text-sm text-slate-400">${formatPts(s.points_against)}</td>
+      <td class="hidden md:table-cell font-mono text-sm ${diffClass(diff)}">${diffLabel(diff)}</td>
+      <td><div class="flex flex-wrap gap-1">${badges.join('') || '<span class="text-slate-600 text-xs">—</span>'}</div></td>
+    </tr>`;
+}
+
+function divisionTable(divName, rows, ownerMap, year, playoffsStarted = true) {
+  const thead = `
+    <thead><tr>
+      <th style="width:40px">#</th><th>Team</th><th>W-L</th><th>PF</th><th>Status</th>
+    </tr></thead>`;
+  const tbody = rows.map((s, i) => {
+    const owner = getOwner(ownerMap, year, s.roster_id);
     const badges = [];
-    if (s.champion)   badges.push(`<span class="badge badge-champion">&#127942; Champ</span>`);
-    if (s.runner_up)  badges.push(`<span class="badge badge-runnerup">&#129352; Runner-up</span>`);
-    if (s.div_champ && !s.champion) badges.push(`<span class="badge badge-divchamp">Div</span>`);
-    if (s.made_playoffs && !s.champion && !s.runner_up) badges.push(`<span class="badge badge-playoffs">Playoffs</span>`);
-
+    if (s.champion)                                                          badges.push(`<span class="badge badge-champion">&#127942; Champ</span>`);
+    if (s.runner_up)                                                         badges.push(`<span class="badge badge-runnerup">&#129352; Runner-up</span>`);
+    if (s.div_champ)                                                         badges.push(divChampBadge(divName));
+    if (s.made_playoffs && !s.champion && !s.runner_up && playoffsStarted)  badges.push(`<span class="badge badge-playoffs">Playoffs</span>`);
+    const cutoffStyle = i === 1 ? 'border-bottom:2px solid #10b981;' : '';
     return `
-      <tr>
-        <td class="text-slate-500 font-mono text-sm">${s.overall_rank ?? i + 1}</td>
+      <tr style="${cutoffStyle}">
+        <td class="text-slate-500 font-mono text-sm">${s.division_rank ?? i + 1}</td>
         <td>
           <div class="flex items-center gap-2">
             ${avatarImg(owner.avatar, owner.display_name, 32)}
@@ -117,15 +151,132 @@ function renderStandingsBody(rows, ownerMap, year) {
             </div>
           </div>
         </td>
-        <td class="hidden sm:table-cell text-slate-400 text-sm">${esc(s.division || owner.division || '—')}</td>
         <td class="font-semibold">${formatRecord(s.wins, s.losses, s.ties)}</td>
-        <td class="hidden md:table-cell text-slate-400 font-mono text-sm">${winPct}</td>
         <td class="font-mono text-sm">${formatPts(s.points_for)}</td>
-        <td class="hidden md:table-cell font-mono text-sm text-slate-400">${formatPts(s.points_against)}</td>
-        <td class="hidden md:table-cell font-mono text-sm ${diffClass(diff)}">${diffLabel(diff)}</td>
         <td><div class="flex flex-wrap gap-1">${badges.join('') || '<span class="text-slate-600 text-xs">—</span>'}</div></td>
       </tr>`;
   }).join('');
+  return `
+    <div>
+      <p class="section-label">${esc(divName)}</p>
+      <div class="card overflow-hidden">
+        <table class="data-table">${thead}<tbody>${tbody}</tbody></table>
+      </div>
+    </div>`;
+}
+
+function wildcardTableHtml(rows, ownerMap, year, playoffsStarted) {
+  const thead = `
+    <thead><tr>
+      <th style="width:40px">#</th><th>Team</th><th>W-L</th><th>PF</th><th>Status</th>
+    </tr></thead>`;
+  const tbody = rows.map((s, i) => {
+    const owner = getOwner(ownerMap, year, s.roster_id);
+    const cutoffStyle = i === 1 ? 'border-bottom:2px solid #10b981;' : '';
+    const badges = [];
+    if (s.champion)                                                          badges.push(`<span class="badge badge-champion">&#127942; Champ</span>`);
+    if (s.runner_up)                                                         badges.push(`<span class="badge badge-runnerup">&#129352; Runner-up</span>`);
+    if (s.made_playoffs && !s.champion && !s.runner_up && playoffsStarted)  badges.push(`<span class="badge badge-playoffs">Playoffs</span>`);
+    return `
+      <tr style="${cutoffStyle}">
+        <td class="text-slate-500 font-mono text-sm">${i + 1}</td>
+        <td>
+          <div class="flex items-center gap-2">
+            ${avatarImg(owner.avatar, owner.display_name, 32)}
+            <div class="min-w-0">
+              <div class="font-semibold truncate-name" style="color:#0D0F11;">${esc(owner.team_name || owner.display_name)}</div>
+              <div class="text-xs text-slate-500 truncate-name">${esc(owner.display_name)}</div>
+            </div>
+          </div>
+        </td>
+        <td class="font-semibold">${formatRecord(s.wins, s.losses, s.ties)}</td>
+        <td class="font-mono text-sm">${formatPts(s.points_for)}</td>
+        <td><div class="flex flex-wrap gap-1">${badges.join('') || '<span class="text-slate-600 text-xs">—</span>'}</div></td>
+      </tr>`;
+  }).join('');
+  return `
+    <div style="margin-top:1.5rem;">
+      <p class="section-label">Wildcard Race</p>
+      <div class="card overflow-hidden">
+        <table class="data-table">${thead}<tbody>${tbody}</tbody></table>
+      </div>
+    </div>`;
+}
+
+function renderStandingsBody(rows, ownerMap, year, playoffsStarted = true) {
+  const container = document.getElementById('standings-container');
+  if (!rows?.length) {
+    container.innerHTML = `<p class="text-slate-500 text-sm">No data for ${year}.</p>`;
+    return;
+  }
+
+  // Group by division
+  const divisions = {};
+  for (const s of rows) {
+    const owner = getOwner(ownerMap, year, s.roster_id);
+    const div = s.division || owner.division || 'League';
+    if (!divisions[div]) divisions[div] = [];
+    divisions[div].push(s);
+  }
+
+  const divNames = Object.keys(divisions).sort();
+  const hasDivisions = divNames.length > 1;
+
+  const fullTheadCols = `
+    <th style="width:40px">#</th><th>Team</th><th>W-L</th>
+    <th class="hidden md:table-cell">Win%</th><th>PF</th>
+    <th class="hidden md:table-cell">PA</th><th class="hidden md:table-cell">+/-</th>
+    <th>Status</th>`;
+
+  // Single table (no divisions, or expanded mode)
+  const singleTable = (teamRows, rankFn) => {
+    const body = teamRows.map((s, i) => standingsRow(s, getOwner(ownerMap, year, s.roster_id), rankFn(s, i), playoffsStarted)).join('');
+    return `
+      <div class="card overflow-x-auto">
+        <table class="data-table">
+          <thead><tr>${fullTheadCols}</tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>`;
+  };
+
+  const expandBtn = hasDivisions ? `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:0.75rem;">
+      <button id="expand-toggle" class="year-pill${isExpanded ? ' year-pill--active' : ''}" style="font-size:0.75rem;">
+        ${isExpanded ? '&#8645; Collapse' : '&#8645; Expand'}
+      </button>
+    </div>` : '';
+
+  if (!hasDivisions || isExpanded) {
+    const divHtml = hasDivisions
+      ? divNames.map(div => `
+          <div>
+            <p class="section-label">${esc(div)}</p>
+            ${singleTable(divisions[div], (s, i) => s.division_rank ?? i + 1)}
+          </div>`).join('')
+      : singleTable(rows, (s, i) => s.overall_rank ?? i + 1);
+
+    container.innerHTML = `${expandBtn}<div style="display:flex;flex-direction:column;gap:2rem;">${divHtml}</div>`;
+  } else {
+    // Wildcard: teams ranked 3rd or lower in their division, sorted by overall_rank
+    const wildcardRows = divNames
+      .flatMap(div => divisions[div].filter((s, i) => (s.division_rank ?? i + 1) > 2))
+      .sort((a, b) => (a.overall_rank ?? 99) - (b.overall_rank ?? 99));
+
+    const wildcardTable = wildcardRows.length ? wildcardTableHtml(wildcardRows, ownerMap, year, playoffsStarted) : '';
+
+    container.innerHTML = `
+      ${expandBtn}
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        ${divNames.map(div => divisionTable(div, divisions[div], ownerMap, year, playoffsStarted)).join('')}
+      </div>
+      ${wildcardTable}`;
+  }
+
+  document.getElementById('expand-toggle')?.addEventListener('click', () => {
+    isExpanded = !isExpanded;
+    renderStandingsBody(cachedRows, cachedOwnerMap, cachedYear, cachedPlayoffs);
+  });
 }
 
 // ---------------------------------------------------------------------------

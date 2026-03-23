@@ -234,7 +234,7 @@ function renderRecentActivity(txns, ownerMap, txnMetaMap) {
 
     const assetLine = row =>
         `<div style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#0D0F11;">
-           ${nflTeamLogo(row.nfl_team)} ${positionBadge(row.player_position)} ${esc(row.player_name)}
+           ${positionBadge(row.player_position)} ${esc(row.player_name)} ${nflTeamLogo(row.nfl_team)}
          </div>`;
 
     el.innerHTML = txns10.map(txn => {
@@ -281,8 +281,8 @@ function renderRecentActivity(txns, ownerMap, txnMetaMap) {
 
             bodyHtml = `
               <div style="display:flex;flex-direction:column;gap:0.15rem;">
-                ${side.adds.map(r => `<div style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#0D0F11;"><span style="font-size:1rem;font-weight:900;color:#10b981;line-height:1;">+</span>${positionBadge(r.player_position)} ${esc(r.player_name)}</div>`).join('')}
-                ${side.drops.map(r => `<div style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#0D0F11;"><span style="font-size:1rem;font-weight:900;color:#ef4444;line-height:1;">−</span>${positionBadge(r.player_position)} ${esc(r.player_name)}</div>`).join('')}
+                ${side.adds.map(r => `<div style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#0D0F11;"><span style="font-size:1rem;font-weight:900;color:#10b981;line-height:1;">+</span>${positionBadge(r.player_position)} ${esc(r.player_name)} ${nflTeamLogo(r.nfl_team)}</div>`).join('')}
+                ${side.drops.map(r => `<div style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#0D0F11;"><span style="font-size:1rem;font-weight:900;color:#ef4444;line-height:1;">−</span>${positionBadge(r.player_position)} ${esc(r.player_name)} ${nflTeamLogo(r.nfl_team)}</div>`).join('')}
               </div>`;
         }
 

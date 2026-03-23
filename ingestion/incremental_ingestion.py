@@ -159,7 +159,9 @@ def main():
     # Transactions return two lists — handle separately
     if "transactions" in tables:
         try:
-            txn_rows, player_rows = get_season_transactions(year, league_id, all_players)
+            db_owners = Owner.objects.values('year', 'roster_id', 'display_name')
+            owner_map = {(str(o['year']), int(o['roster_id'])): o['display_name'] for o in db_owners}
+            txn_rows, player_rows = get_season_transactions(year, league_id, all_players, owner_map=owner_map)
             results["transactions"]        = season_replace(Transaction,       build_transactions(txn_rows),          year=year)
             results["transaction_players"] = season_replace(TransactionPlayer, build_transaction_players(player_rows), year=year)
         except Exception as e:

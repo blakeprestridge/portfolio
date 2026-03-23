@@ -7,11 +7,22 @@ function avatarUrl(hash) {
   return `https://sleepercdn.com/avatars/thumbs/${hash}`;
 }
 
+function divChampBadge(division) {
+  const div = (division || '').toLowerCase();
+  if (div.includes('east')) return `<span class="badge badge-divchamp-east">East Champ</span>`;
+  if (div.includes('west')) return `<span class="badge badge-divchamp-west">West Champ</span>`;
+  return `<span class="badge badge-divchamp">Div Champ</span>`;
+}
+
+const SLEEPER_TO_ESPN_ABBR = { WAS: 'wsh', WSH: 'wsh' };
+
+const NFL_FALLBACK_LOGO = 'https://a.espncdn.com/i/teamlogos/leagues/500/nfl.png';
+
 function nflTeamLogo(team, sizePx = 20) {
-  if (!team) return '';
-  const url = `https://sleepercdn.com/images/team_logos/nfl/${team.toLowerCase()}.jpg`;
-  const style = `width:${sizePx}px;height:${sizePx}px;min-width:${sizePx}px;border-radius:2px;object-fit:contain;`;
-  return `<img src="${url}" alt="${esc(team)}" style="${style}" onerror="this.style.display='none'">`;
+  const abbr = team ? (SLEEPER_TO_ESPN_ABBR[team] || team).toLowerCase() : null;
+  const url = abbr ? `https://a.espncdn.com/i/teamlogos/nfl/500/${abbr}.png` : NFL_FALLBACK_LOGO;
+  const style = `width:${sizePx}px;height:${sizePx}px;min-width:${sizePx}px;object-fit:contain;`;
+  return `<img src="${url}" alt="${esc(team || 'NFL')}" style="${style}" onerror="this.src='${NFL_FALLBACK_LOGO}'">`;
 }
 
 /** Renders a circular avatar image, falling back to initials on error. */
@@ -49,7 +60,7 @@ const POSITION_COLORS = {
 
 function positionBadge(pos) {
   const color = POSITION_COLORS[pos] || '#94a3b8';
-  return `<span class="pos-badge" style="background:${color}20;color:${color};border:1px solid ${color}40;">${esc(pos || '?')}</span>`;
+  return `<span class="pos-badge" style="background:${color};color:#fff;border:1px solid ${color};">${esc(pos || '?')}</span>`;
 }
 
 // ---------------------------------------------------------------------------

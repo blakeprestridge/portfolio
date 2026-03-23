@@ -171,6 +171,18 @@ h1, h2, h3, .display {
     border: 1px solid rgba(99, 102, 241, 0.25);
 }
 
+.badge-divchamp-east {
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d6dd4;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badge-divchamp-west {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
 /* ------------------------------------------------------------------ */
 /* Cards                                                               */
 /* ------------------------------------------------------------------ */
@@ -354,6 +366,10 @@ h1, h2, h3, .display {
     max-width: 680px;
     margin: 0 auto;
     padding: 0 1rem;
+}
+
+.page-container--wide {
+    max-width: 1100px;
 }
 
 /* ------------------------------------------------------------------ */

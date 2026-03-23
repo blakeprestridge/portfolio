@@ -113,6 +113,7 @@ def main():
     all_stats                                             = []
     all_txns, all_txn_players, all_traded_picks          = [], [], []
     all_draft_meta, all_draft_picks                      = [], []
+    owner_map                                             = {}
 
     for season in seasons:
         year      = season["year"]
@@ -120,7 +121,10 @@ def main():
         print(f"\n--- {year} (league {league_id}) ---")
 
         try:
-            all_owners += get_season_owners(year, league_id)
+            season_owners = get_season_owners(year, league_id)
+            all_owners += season_owners
+            for o in season_owners:
+                owner_map[(str(o['year']), int(o['roster_id']))] = o['display_name']
             print(f"  owners         OK")
         except Exception as e:
             print(f"  owners         FAILED: {e}")
@@ -150,7 +154,7 @@ def main():
             print(f"  player_stats   FAILED: {e}")
 
         try:
-            txn_rows, player_rows = get_season_transactions(year, league_id, all_players)
+            txn_rows, player_rows = get_season_transactions(year, league_id, all_players, owner_map=owner_map)
             all_txns        += txn_rows
             all_txn_players += player_rows
             print(f"  transactions   OK")
