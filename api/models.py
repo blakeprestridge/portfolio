@@ -51,7 +51,7 @@ class Standing(models.Model):
 class Matchup(models.Model):
     year               = models.IntegerField()
     week               = models.IntegerField()
-    matchup_id         = models.IntegerField()
+    matchup_id         = models.IntegerField(blank=True, null=True)
     roster_id          = models.IntegerField()
     opponent_roster_id = models.IntegerField(blank=True, null=True)
     points             = models.FloatField(default=0)
@@ -61,7 +61,7 @@ class Matchup(models.Model):
 
     class Meta:
         db_table        = "matchups"
-        unique_together = [("year", "week", "matchup_id", "roster_id")]
+        unique_together = [("year", "week", "roster_id")]
         ordering        = ["year", "week", "matchup_id"]
 
     def __str__(self):

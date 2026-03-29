@@ -91,14 +91,35 @@ def get_season_matchups(year, league_id):
                 # No more matchups available
                 break
 
-            # Group matchups by matchup_id
+            # Group matchups by matchup_id; matchup_id=None means a playoff bye
             matchup_groups = {}
+            bye_teams = []
             for matchup in matchups:
                 matchup_id = matchup.get('matchup_id')
-                if matchup_id:
+                if matchup_id is not None:
                     if matchup_id not in matchup_groups:
                         matchup_groups[matchup_id] = []
                     matchup_groups[matchup_id].append(matchup)
+                else:
+                    bye_teams.append(matchup)
+
+            # Record playoff bye weeks (matchup_id is None)
+            for matchup in bye_teams:
+                roster_id = matchup.get('roster_id')
+                if week < playoff_week_start:
+                    game_type = 'regular'
+                elif roster_id in playoff_rosters:
+                    game_type = 'wildcard'
+                elif roster_id in consolation_rosters:
+                    game_type = 'consolation'
+                else:
+                    game_type = 'regular'
+                matchup_data.append({
+                    'year': year, 'week': week, 'matchup_id': None,
+                    'roster_id': roster_id, 'opponent_roster_id': None,
+                    'points': matchup.get('points', 0), 'opponent_points': None,
+                    'result': 'BYE', 'game_type': game_type,
+                })
 
             # Process each matchup pair
             for matchup_id, teams in matchup_groups.items():

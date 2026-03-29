@@ -16,8 +16,8 @@ let _allStandings  = [];
 let _playerDetails  = {};   // player_id → { team, age }
 let _statsByYear    = {};   // statsYear → { player_id → { total_pts, avg_pts, pos_rank } }
 let _yearCache      = {};   // year → { roster, latestWeek, matchups, opponentMap, statsYear }
-let _rosterExpanded    = false;
-let _expandedPositions = new Set();  // positions individually expanded via "+N more"
+let _rosterExpanded    = true;
+let _expandedPositions = new Set(POSITION_ORDER);  // all positions expanded by default
 
 // ---------------------------------------------------------------------------
 // Bootstrap
@@ -351,16 +351,19 @@ function renderSchedule(matchups, opponentMap, year) {
     return;
   }
 
-  const roundBadge = (week, gameType) => {
+  const roundBadge = (gameType, isBye) => {
     const map = {
-      wildcard:     { label: 'Wildcard',     color: '#a855f7' },
-      divisional:   { label: 'Divisional',   color: '#a855f7' },
-      championship: { label: 'Championship', color: '#eab308' },
-      third_place:  { label: '3rd Place',    color: '#f97316' },
-      fifth_place:  { label: '5th Place',    color: '#f97316' },
-      consolation:  { label: 'Consolation',  color: '#94a3b8' },
-      playoff:      { label: 'Playoff',      color: '#a855f7' },
+      wildcard:     { label: 'Wildcard',      color: '#a855f7' },
+      divisional:   { label: 'Divisional',    color: '#a855f7' },
+      championship: { label: 'Championship',  color: '#eab308' },
+      third_place:  { label: '3rd Place',     color: '#f97316' },
+      fifth_place:  { label: '5th Place',     color: '#f97316' },
+      consolation:  { label: 'Consolation',   color: '#94a3b8' },
+      playoff:      { label: 'Playoff',       color: '#a855f7' },
     };
+    if (isBye && gameType === 'wildcard') {
+      return `<span style="font-size:0.6rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#a855f7;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);border-radius:99px;padding:1px 6px;">1st Rd Bye</span>`;
+    }
     const entry = map[gameType];
     if (!entry) return '';
     const { label, color } = entry;
@@ -386,8 +389,8 @@ function renderSchedule(matchups, opponentMap, year) {
         <td>
           <div style="display:flex;align-items:center;gap:6px;">
             ${isBye ? '' : avatarImg(opp.avatar, opp.display_name, 22)}
-            <span style="font-size:0.8rem;color:#374151;">${esc(opp.display_name)}</span>
-            ${roundBadge(m.week, m.game_type)}
+            ${isBye ? '' : `<span style="font-size:0.8rem;color:#374151;">${esc(opp.display_name)}</span>`}
+            ${roundBadge(m.game_type, isBye)}
           </div>
         </td>
       </tr>`;
