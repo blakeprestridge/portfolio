@@ -406,9 +406,7 @@ function renderSchedule(matchups, opponentMap, year) {
 
   const maxWeek = !madePlayoffs
     ? regularSeasonEnd
-    : matchups.some(m => m.game_type === 'fifth_place')
-      ? Math.max(...playoffGames.map(m => m.week))   // last game was 5th place
-      : 17;
+    : Math.max(...playoffGames.map(m => m.week));
 
   const visible = matchups.filter(m => m.week <= maxWeek);
   const left  = visible.filter(m => m.week <= 9).map(buildRow).join('');
