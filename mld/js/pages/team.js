@@ -397,8 +397,14 @@ function renderSchedule(matchups, opponentMap, year) {
   };
 
   const thead = `<thead><tr><th>Wk</th><th>W/L</th><th>Score</th><th>Opponent</th></tr></thead>`;
-  const left  = matchups.filter(m => m.week <= 9).map(buildRow).join('');
-  const right = matchups.filter(m => m.week >= 10 && m.week <= 17).map(buildRow).join('');
+  const madePlayoffs = matchups.some(m => m.week >= 15 && m.game_type !== 'regular');
+  const maxWeek = !madePlayoffs ? 14
+    : matchups.some(m => m.game_type === 'fifth_place') ? 16
+    : 17;
+
+  const visible = matchups.filter(m => m.week <= maxWeek);
+  const left  = visible.filter(m => m.week <= 9).map(buildRow).join('');
+  const right  = visible.filter(m => m.week >= 10).map(buildRow).join('');
 
   el.innerHTML = `
     <div class="card overflow-hidden">
