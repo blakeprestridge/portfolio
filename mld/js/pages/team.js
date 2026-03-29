@@ -590,12 +590,18 @@ function renderHistory() {
 
   const rows = [..._allStandings].reverse().map(s => {
     const diff = (s.points_for || 0) - (s.points_against || 0);
+    const seasonComplete = s.year < CURRENT_YEAR;
     const badges = [];
-    if (s.champion)   badges.push(`<span class="badge badge-champion">&#127942; Champ</span>`);
-    if (s.runner_up)  badges.push(`<span class="badge badge-runnerup">&#129352; Runner-up</span>`);
-    if (s.div_champ)  badges.push(divChampBadge(s.division));
-    if (s.made_playoffs && !s.champion && !s.runner_up)
-                      badges.push(`<span class="badge badge-playoffs">Playoffs</span>`);
+    if (seasonComplete) {
+      if (s.champion)  badges.push(`<span class="badge badge-champion">&#127942; Champ</span>`);
+      if (s.runner_up) badges.push(`<span class="badge badge-runnerup">&#129352; Runner-up</span>`);
+      if (s.div_champ) badges.push(divChampBadge(s.division));
+      if (s.made_playoffs && !s.champion && !s.runner_up)
+                       badges.push(`<span class="badge badge-playoffs">Playoffs</span>`);
+    }
+    const resultCell = !seasonComplete
+      ? '<span style="font-size:0.75rem;color:#d1d5db;">In progress</span>'
+      : badges.join('') || '<span style="font-size:0.75rem;color:#94a3b8;">Missed</span>';
     return `
       <tr>
         <td class="font-mono text-sm font-semibold" style="color:#0D0F11;">${s.year}</td>
@@ -604,7 +610,7 @@ function renderHistory() {
         <td class="font-mono text-sm hidden md:table-cell">${formatPts(s.points_for)}</td>
         <td class="font-mono text-sm hidden md:table-cell text-slate-400">${formatPts(s.points_against)}</td>
         <td class="font-mono text-sm hidden md:table-cell ${diffClass(diff)}">${diffLabel(diff)}</td>
-        <td><div style="display:flex;gap:4px;flex-wrap:wrap;">${badges.join('') || '<span style="font-size:0.75rem;color:#94a3b8;">Missed</span>'}</div></td>
+        <td><div style="display:flex;gap:4px;flex-wrap:wrap;">${resultCell}</div></td>
       </tr>`;
   }).join('');
 
