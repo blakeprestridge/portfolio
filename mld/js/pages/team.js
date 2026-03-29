@@ -293,7 +293,8 @@ function renderHero(owner) {
 function renderStatBar() {
   const cur = _allStandings.find(s => s.year === CURRENT_YEAR);
   const championships = _allStandings.filter(s => s.champion).length;
-  const playoffApps   = _allStandings.filter(s => s.made_playoffs).length;
+  const completedSeasons = _allStandings.filter(s => s.year < CURRENT_YEAR);
+  const playoffApps      = completedSeasons.filter(s => s.made_playoffs).length;
   const totalGames    = _allStandings.reduce((sum, s) => sum + s.wins + s.losses + (s.ties || 0), 0);
   const totalWins     = _allStandings.reduce((sum, s) => sum + s.wins, 0);
   const allTimePct    = totalGames > 0
@@ -320,7 +321,7 @@ function renderStatBar() {
     {
       label: 'Playoff Apps',
       value: playoffApps,
-      sub:   `of ${_allStandings.length} seasons`,
+      sub:   `of ${completedSeasons.length} seasons`,
     },
     {
       label: 'All-Time Win%',
