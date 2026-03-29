@@ -398,7 +398,7 @@ function renderSchedule(matchups, opponentMap, year) {
 
   const thead = `<thead><tr><th>Wk</th><th>W/L</th><th>Score</th><th>Opponent</th></tr></thead>`;
   const left  = matchups.filter(m => m.week <= 9).map(buildRow).join('');
-  const right = matchups.filter(m => m.week >= 10).map(buildRow).join('');
+  const right = matchups.filter(m => m.week >= 10 && m.week <= 17).map(buildRow).join('');
 
   el.innerHTML = `
     <div class="card overflow-hidden">
