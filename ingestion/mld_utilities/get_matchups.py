@@ -79,7 +79,7 @@ def get_season_matchups(year, league_id):
 
     # Regular season weeks (typically weeks 1-14 or 1-15)
     # We'll try to get all weeks and handle errors for weeks that don't exist
-    max_weeks = 18  # NFL regular season
+    max_weeks = 17  # MLD season ends at week 17
 
     matchup_data = []
 

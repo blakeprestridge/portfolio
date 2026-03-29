@@ -76,7 +76,7 @@ def get_season_lineups(year, league_id, all_players):
     roster_positions = league_info.get('roster_positions', [])
 
     # Determine max weeks to fetch
-    max_weeks = 18  # NFL season length
+    max_weeks = 17  # MLD season ends at week 17
 
     lineup_data = []
 
