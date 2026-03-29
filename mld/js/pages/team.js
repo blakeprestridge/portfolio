@@ -404,9 +404,11 @@ function renderSchedule(matchups, opponentMap, year) {
     : (year === 2020 ? 14 : 15);   // fallback for non-playoff teams
   const regularSeasonEnd = playoffStart - 1;
 
-  const maxWeek = !madePlayoffs
-    ? regularSeasonEnd
-    : Math.max(...playoffGames.map(m => m.week));
+  const hardCap = year === 2020 ? 16 : 17;
+  const maxWeek = Math.min(
+    !madePlayoffs ? regularSeasonEnd : Math.max(...playoffGames.map(m => m.week)),
+    hardCap
+  );
 
   const visible = matchups.filter(m => m.week <= maxWeek);
   const left  = visible.filter(m => m.week <= 9).map(buildRow).join('');
