@@ -43,23 +43,39 @@ def get_season_matchups(year, league_id):
         playoff_rosters = set()
         consolation_rosters = set()
 
+        # Map frozenset({t1, t2}) -> specific game type using round/placement
+        bracket_game_types = {}
+
         if winners_bracket:
-            for matchup in winners_bracket:
-                if matchup.get('t1'):
-                    playoff_rosters.add(matchup['t1'])
-                if matchup.get('t2'):
-                    playoff_rosters.add(matchup['t2'])
+            for m in winners_bracket:
+                t1, t2 = m.get('t1'), m.get('t2')
+                r, p   = m.get('r'), m.get('p')
+                if t1:
+                    playoff_rosters.add(t1)
+                if t2:
+                    playoff_rosters.add(t2)
+                if t1 and t2:
+                    if r == 1:
+                        label = 'wildcard'
+                    elif r == 2:
+                        label = 'fifth_place' if p == 5 else 'divisional'
+                    elif r == 3:
+                        label = 'third_place' if p == 3 else 'championship'
+                    else:
+                        label = 'playoff'
+                    bracket_game_types[frozenset({t1, t2})] = label
 
         if losers_bracket:
-            for matchup in losers_bracket:
-                if matchup.get('t1'):
-                    consolation_rosters.add(matchup['t1'])
-                if matchup.get('t2'):
-                    consolation_rosters.add(matchup['t2'])
+            for m in losers_bracket:
+                if m.get('t1'):
+                    consolation_rosters.add(m['t1'])
+                if m.get('t2'):
+                    consolation_rosters.add(m['t2'])
     except:
         # If brackets not available, we'll rely on playoff_week_start only
         playoff_rosters = set()
         consolation_rosters = set()
+        bracket_game_types = {}
 
     # Regular season weeks (typically weeks 1-14 or 1-15)
     # We'll try to get all weeks and handle errors for weeks that don't exist
@@ -105,14 +121,16 @@ def get_season_matchups(year, league_id):
                     roster1_id = team1.get('roster_id')
                     roster2_id = team2.get('roster_id')
 
+                    key = frozenset({roster1_id, roster2_id})
                     if week < playoff_week_start:
                         game_type = 'regular'
-                    elif roster1_id in playoff_rosters or roster2_id in playoff_rosters:
-                        game_type = 'playoff'
+                    elif key in bracket_game_types:
+                        game_type = bracket_game_types[key]
                     elif roster1_id in consolation_rosters or roster2_id in consolation_rosters:
                         game_type = 'consolation'
+                    elif roster1_id in playoff_rosters or roster2_id in playoff_rosters:
+                        game_type = 'playoff'
                     else:
-                        # Default to playoff if week >= playoff_week_start and no bracket info
                         game_type = 'playoff'
 
                     # Add entry for team1
@@ -149,11 +167,11 @@ def get_season_matchups(year, league_id):
                     if week < playoff_week_start:
                         game_type = 'regular'
                     elif roster_id in playoff_rosters:
-                        game_type = 'playoff'
+                        game_type = 'wildcard'   # top-seed bye during wildcard week
                     elif roster_id in consolation_rosters:
                         game_type = 'consolation'
                     else:
-                        game_type = 'regular'  # Byes typically in regular season
+                        game_type = 'regular'
 
                     matchup_data.append({
                         'year': year,

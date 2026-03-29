@@ -351,6 +351,22 @@ function renderSchedule(matchups, opponentMap, year) {
     return;
   }
 
+  const roundBadge = (week, gameType) => {
+    const map = {
+      wildcard:     { label: 'Wildcard',     color: '#a855f7' },
+      divisional:   { label: 'Divisional',   color: '#a855f7' },
+      championship: { label: 'Championship', color: '#eab308' },
+      third_place:  { label: '3rd Place',    color: '#f97316' },
+      fifth_place:  { label: '5th Place',    color: '#f97316' },
+      consolation:  { label: 'Consolation',  color: '#94a3b8' },
+      playoff:      { label: 'Playoff',      color: '#a855f7' },
+    };
+    const entry = map[gameType];
+    if (!entry) return '';
+    const { label, color } = entry;
+    return `<span style="font-size:0.6rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:${color};background:${color}1a;border:1px solid ${color}40;border-radius:99px;padding:1px 6px;margin-left:4px;">${label}</span>`;
+  };
+
   const buildRow = m => {
     const opp   = opponentMap[m.opponent_roster_id] || { display_name: 'BYE', avatar: null };
     const isBye = m.result === 'BYE';
@@ -362,9 +378,6 @@ function renderSchedule(matchups, opponentMap, year) {
       : `<span style="font-weight:700;">${formatPts(m.points)}</span>
          <span style="color:#94a3b8;margin:0 3px;">-</span>
          <span style="color:#94a3b8;">${formatPts(m.opponent_points)}</span>`;
-    const gameTypeBadge = m.game_type !== 'regular'
-      ? `<span style="font-size:0.6rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#a855f7;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);border-radius:99px;padding:1px 6px;margin-left:4px;">${m.game_type}</span>`
-      : '';
     return `
       <tr>
         <td class="font-mono text-sm text-slate-500">Wk ${m.week}</td>
@@ -374,7 +387,7 @@ function renderSchedule(matchups, opponentMap, year) {
           <div style="display:flex;align-items:center;gap:6px;">
             ${isBye ? '' : avatarImg(opp.avatar, opp.display_name, 22)}
             <span style="font-size:0.8rem;color:#374151;">${esc(opp.display_name)}</span>
-            ${gameTypeBadge}
+            ${roundBadge(m.week, m.game_type)}
           </div>
         </td>
       </tr>`;
