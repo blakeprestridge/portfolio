@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Team — MLD</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
+
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body class="min-h-screen">
+
+  <div id="header-root"></div>
+  <div id="nav-root"></div>
+
+  <main class="page-container page-container--wide py-10">
+
+    <!-- Hero -->
+    <div id="team-hero" style="margin-bottom:2rem;">
+      <!-- JS -->
+    </div>
+
+    <!-- Stat bar -->
+    <div id="stat-bar" style="margin-bottom:2.5rem;">
+      <!-- JS -->
+    </div>
+
+    <!-- Season selector -->
+    <div id="season-selector" class="flex flex-wrap gap-2" style="margin-bottom:1.5rem;"><!-- JS --></div>
+
+    <!-- Schedule -->
+    <div style="margin-bottom:2.5rem;">
+      <p class="section-label" style="text-align:left;" id="schedule-label">Schedule</p>
+      <div id="schedule-container"><!-- JS --></div>
+    </div>
+
+    <!-- Roster -->
+    <div style="margin-bottom:2.5rem;">
+      <p class="section-label" style="text-align:left;">Roster</p>
+      <div id="roster-container"><!-- JS --></div>
+    </div>
+
+    <!-- Season history -->
+    <div style="margin-bottom:4rem;">
+      <p class="section-label">Season History</p>
+      <div id="history-container"><!-- JS --></div>
+    </div>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/pages/team.js"></script>
+
+</body>
+</html>

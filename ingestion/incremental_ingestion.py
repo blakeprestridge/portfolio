@@ -18,9 +18,11 @@ from db_utils import (
 from api.models import (
     Owner, Roster, Standing, Matchup, PlayerStat,
     Transaction, TransactionPlayer, TradedPick, DraftMetadata, DraftPick,
+    PlayerSeasonStats,
 )
 
-from mld_utilities.get_rosters      import get_season_owners, get_season_rosters
+from mld_utilities.get_rosters            import get_season_owners, get_season_rosters
+from mld_utilities.get_player_season_stats import get_player_season_stats
 from mld_utilities.get_matchups     import get_season_matchups
 from mld_utilities.get_standings    import get_season_standings
 from mld_utilities.get_player_stats import get_week_stats_for_season
@@ -78,6 +80,9 @@ def build_traded_picks(rows):
 def build_draft_metadata(rows):
     return [DraftMetadata(**clean_row(r)) for r in rows]
 
+def build_player_season_stats(rows):
+    return [PlayerSeasonStats(**clean_row(r)) for r in rows]
+
 def build_draft_picks(rows):
     instances = []
     for r in rows:
@@ -96,7 +101,7 @@ GROUPS = {
         "rosters", "matchups", "transactions", "traded_picks",
     ],
     "weekly": [
-        "player_stats", "standings",
+        "player_stats", "player_season_stats", "standings",
     ],
     "manual": [
         "owners", "draft_metadata", "draft_picks",
@@ -153,7 +158,8 @@ def main():
     run("rosters",      Roster,     build_rosters,      get_season_rosters,            year, league_id, all_players)
     run("standings",    Standing,   build_standings,    get_season_standings,          year, league_id)
     run("matchups",     Matchup,    build_matchups,     get_season_matchups,           year, league_id)
-    run("player_stats", PlayerStat, build_player_stats, get_week_stats_for_season,     year, all_players, MLD_POSITIONS)
+    run("player_stats",        PlayerStat,        build_player_stats,        get_week_stats_for_season, year, all_players, MLD_POSITIONS)
+    run("player_season_stats", PlayerSeasonStats, build_player_season_stats, get_player_season_stats,   year)
     run("traded_picks", TradedPick, build_traded_picks, get_season_traded_picks,       year, league_id, year_field="league_year")
 
     # Transactions return two lists — handle separately

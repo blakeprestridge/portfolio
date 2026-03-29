@@ -9,10 +9,56 @@ const NAV_PAGES = [
   { label: 'Records',   href: 'records.html',    id: 'records'   },
 ];
 
+const CHEVRON_SVG = `<svg style="width:10px;height:10px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+</svg>`;
+
+function _teamsDropdownSkeleton() {
+  return [140, 120, 155, 130, 145, 120, 135, 150, 125, 140, 130, 160]
+    .map(w => `<div class="skeleton" style="height:13px;width:${w}px;border-radius:4px;margin:5px 8px;"></div>`)
+    .join('');
+}
+
 function renderNav(activePage) {
-  const links = NAV_PAGES.map(p => {
-    const active = p.id === activePage;
-    return `<a href="${p.href}" class="nav-link${active ? ' nav-link--active' : ''}">${p.label}</a>`;
+  const active = id => id === activePage;
+
+  // Desktop links
+  const desktopLinks = NAV_PAGES.map(p => {
+    if (p.id === 'teams') {
+      return `
+        <div class="nav-dropdown">
+          <button class="nav-link${active('teams') ? ' nav-link--active' : ''}"
+                  style="gap:5px;cursor:default;border:none;background:none;padding-right:0.5rem;">
+            Teams ${CHEVRON_SVG}
+          </button>
+          <div class="nav-dropdown-menu" id="teams-dropdown-menu">
+            ${_teamsDropdownSkeleton()}
+          </div>
+        </div>`;
+    }
+    return `<a href="${p.href}" class="nav-link${active(p.id) ? ' nav-link--active' : ''}">${p.label}</a>`;
+  }).join('');
+
+  // Mobile links
+  const mobileLinks = NAV_PAGES.map(p => {
+    if (p.id === 'teams') {
+      return `
+        <div>
+          <button id="teams-mobile-btn"
+                  class="nav-link${active('teams') ? ' nav-link--active' : ''}"
+                  style="width:100%;justify-content:space-between;border:none;background:none;cursor:pointer;">
+            <span>Teams</span>
+            <svg id="teams-mobile-chevron" style="width:11px;height:11px;transition:transform 0.2s;"
+                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div id="teams-mobile-sub" class="hidden" style="padding-left:0.75rem;">
+            ${_teamsDropdownSkeleton()}
+          </div>
+        </div>`;
+    }
+    return `<a href="${p.href}" class="nav-link${active(p.id) ? ' nav-link--active' : ''}">${p.label}</a>`;
   }).join('');
 
   document.getElementById('header-root').innerHTML = `
@@ -29,7 +75,7 @@ function renderNav(activePage) {
       <div class="page-container" style="max-width:680px;margin:0 auto;padding:0 1rem;">
 
         <div class="hidden lg:flex items-center justify-center gap-1 h-11">
-          ${links}
+          ${desktopLinks}
         </div>
 
         <div class="lg:hidden flex items-center justify-between h-11">
@@ -43,7 +89,7 @@ function renderNav(activePage) {
         </div>
 
         <div id="mobile-menu" class="hidden lg:hidden pb-3 flex flex-col items-center gap-1">
-          ${links}
+          ${mobileLinks}
         </div>
       </div>
     </nav>`;
@@ -54,4 +100,49 @@ function renderNav(activePage) {
     document.getElementById('icon-open').classList.toggle('hidden', !open);
     document.getElementById('icon-closed').classList.toggle('hidden', open);
   });
+
+  document.getElementById('teams-mobile-btn')?.addEventListener('click', () => {
+    const sub     = document.getElementById('teams-mobile-sub');
+    const chevron = document.getElementById('teams-mobile-chevron');
+    const nowHidden = sub.classList.toggle('hidden');
+    chevron.style.transform = nowHidden ? '' : 'rotate(180deg)';
+  });
+
+  _loadTeamsDropdown();
+}
+
+async function _loadTeamsDropdown() {
+  if (!window.db) return;
+  try {
+    const { data: owners, error } = await window.db
+      .from('owners')
+      .select('roster_id,display_name,avatar')
+      .eq('year', CURRENT_YEAR)
+      .order('display_name');
+
+    if (error || !owners?.length) return;
+
+    const desktopItems = owners.map(o => `
+      <a href="team.html?roster_id=${o.roster_id}" class="nav-dropdown-item">
+        ${avatarImg(o.avatar, o.display_name, 22)}
+        ${esc(o.display_name)}
+      </a>`).join('');
+
+    const mobileItems = owners.map(o => `
+      <a href="team.html?roster_id=${o.roster_id}"
+         class="nav-link"
+         style="display:flex;align-items:center;gap:8px;padding:0.3rem 0.5rem;font-size:0.78rem;justify-content:flex-start;">
+        ${avatarImg(o.avatar, o.display_name, 20)}
+        ${esc(o.display_name)}
+      </a>`).join('');
+
+    const desktopMenu = document.getElementById('teams-dropdown-menu');
+    if (desktopMenu) desktopMenu.innerHTML = desktopItems;
+
+    const mobileSub = document.getElementById('teams-mobile-sub');
+    if (mobileSub) mobileSub.innerHTML = mobileItems;
+
+  } catch (err) {
+    console.error('Failed to load teams dropdown:', err);
+  }
 }

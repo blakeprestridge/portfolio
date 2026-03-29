@@ -99,13 +99,15 @@ def get_season_rosters(year, league_id, all_players):
     # Build taxi / IR maps from current roster state (best available — no week-by-week history)
     taxi_players = set()
     ir_players   = set()
-    for r in league.get_rosters():
+    current_rosters = league.get_rosters()
+    for r in current_rosters:
         for pid in (r.get('taxi') or []):
             taxi_players.add(str(pid))
         for pid in (r.get('reserve') or []):
             ir_players.add(str(pid))
 
     rows = []
+    scored_weeks = 0
 
     for week in range(1, 19):
         matchups = league.get_matchups(week)
@@ -116,6 +118,8 @@ def get_season_rosters(year, league_id, all_players):
         # Stop once we hit a week with no scored points
         if not any((m.get('points') or 0) > 0 for m in matchups):
             break
+
+        scored_weeks += 1
 
         for matchup in matchups:
             roster_id      = matchup.get('roster_id')
@@ -164,6 +168,41 @@ def get_season_rosters(year, league_id, all_players):
                     'lineup_slot':     lineup_slot,
                     'is_starter':      is_starter,
                     'points':          points,
+                })
+
+    # Pre-season fallback: no weeks have been played yet, so emit current
+    # roster state as week 0 so the team page always has something to show.
+    if scored_weeks == 0:
+        for roster in current_rosters:
+            roster_id  = roster.get('roster_id')
+            player_ids = roster.get('players') or []
+            for player_id in player_ids:
+                if not player_id or player_id == "0":
+                    continue
+                player_info     = all_players.get(str(player_id)) or {}
+                player_position = player_info.get('position', 'UNKNOWN')
+                player_name     = player_info.get('full_name', 'Unknown Player')
+                mapped_position = map_position(player_position)
+
+                pid_str = str(player_id)
+                if pid_str in taxi_players:
+                    lineup_slot = 'TAXI'
+                elif pid_str in ir_players:
+                    lineup_slot = 'IR'
+                else:
+                    lineup_slot = 'BN'
+
+                rows.append({
+                    'year':            year,
+                    'week':            0,
+                    'roster_id':       roster_id,
+                    'player_id':       pid_str,
+                    'player_name':     player_name,
+                    'player_position': player_position,
+                    'mapped_position': mapped_position,
+                    'lineup_slot':     lineup_slot,
+                    'is_starter':      False,
+                    'points':          0,
                 })
 
     return rows

@@ -373,6 +373,53 @@ h1, h2, h3, .display {
 }
 
 /* ------------------------------------------------------------------ */
+/* Nav dropdown (Teams sub-menu)                                      */
+/* ------------------------------------------------------------------ */
+.nav-dropdown {
+    position: relative;
+}
+
+.nav-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    min-width: 180px;
+    z-index: 2000;
+    padding: 6px 0.375rem 0.375rem;
+}
+
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown-menu:hover {
+    display: block;
+}
+
+.nav-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.45rem 0.625rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #2B3544;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: background 0.1s;
+    white-space: nowrap;
+}
+
+.nav-dropdown-item:hover {
+    background: #f3f4f6;
+    color: #0D0F11;
+}
+
+/* ------------------------------------------------------------------ */
 /* Utility                                                             */
 /* ------------------------------------------------------------------ */
 .truncate-name {

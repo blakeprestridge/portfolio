@@ -248,6 +248,47 @@ class DraftMetadata(models.Model):
         return f"{self.year} draft — {self.type} ({self.status})"
 
 
+class PlayerSeasonStats(models.Model):
+    year            = models.IntegerField()
+    player_id       = models.CharField(max_length=20)
+    player_name     = models.CharField(max_length=100)
+    player_position = models.CharField(max_length=20)
+    mapped_position = models.CharField(max_length=20)
+    total_pts       = models.FloatField(default=0)
+    weeks_played    = models.IntegerField(default=0)
+    avg_pts         = models.FloatField(default=0)
+    pos_rank        = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        db_table        = "player_season_stats"
+        unique_together = [("year", "player_id")]
+        ordering        = ["year", "mapped_position", "pos_rank"]
+
+    def __str__(self):
+        return f"{self.year} — {self.player_name} ({self.mapped_position}{self.pos_rank}) {self.total_pts:.1f}pts"
+
+
+class Player(models.Model):
+    player_id     = models.CharField(max_length=20, unique=True)
+    full_name     = models.CharField(max_length=100)
+    first_name    = models.CharField(max_length=50, blank=True, null=True)
+    last_name     = models.CharField(max_length=50, blank=True, null=True)
+    position      = models.CharField(max_length=20, blank=True, null=True)
+    team          = models.CharField(max_length=10, blank=True, null=True)
+    age           = models.IntegerField(blank=True, null=True)
+    years_exp     = models.IntegerField(blank=True, null=True)
+    status        = models.CharField(max_length=50, blank=True, null=True)
+    injury_status = models.CharField(max_length=50, blank=True, null=True)
+    search_rank   = models.IntegerField(blank=True, null=True)
+
+    class Meta:
+        db_table = "players"
+        ordering = ["search_rank", "full_name"]
+
+    def __str__(self):
+        return f"{self.full_name} ({self.position}, {self.team or 'FA'})"
+
+
 class DraftPick(models.Model):
     year         = models.IntegerField()
     draft_id     = models.BigIntegerField()

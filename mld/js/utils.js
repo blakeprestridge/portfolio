@@ -55,7 +55,7 @@ const POSITION_COLORS = {
   QB: '#6366f1', RB: '#10b981', WR: '#0ea5e9', TE: '#f97316',
   K:  '#64748b', DL: '#ef4444', LB: '#eab308', DB: '#a855f7',
   DE: '#ef4444', DT: '#ef4444', CB: '#a855f7', S: '#a855f7',
-  FLEX: '#94a3b8', SUPER_FLEX: '#94a3b8', IDP_FLEX: '#94a3b8', DEF: '#94a3b8',
+  FLEX: '#94a3b8', SUPER_FLEX: '#94a3b8', SFLEX: '#94a3b8', IDP_FLEX: '#94a3b8', DEF: '#94a3b8',
 };
 
 function positionBadge(pos) {
