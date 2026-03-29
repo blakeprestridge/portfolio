@@ -397,10 +397,18 @@ function renderSchedule(matchups, opponentMap, year) {
   };
 
   const thead = `<thead><tr><th>Wk</th><th>W/L</th><th>Score</th><th>Opponent</th></tr></thead>`;
-  const madePlayoffs = matchups.some(m => m.week >= 15 && m.game_type !== 'regular');
-  const maxWeek = !madePlayoffs ? 14
-    : matchups.some(m => m.game_type === 'fifth_place') ? 16
-    : 17;
+  const playoffGames    = matchups.filter(m => m.game_type !== 'regular');
+  const madePlayoffs    = playoffGames.length > 0;
+  const playoffStart    = madePlayoffs
+    ? Math.min(...playoffGames.map(m => m.week))
+    : (year === 2020 ? 14 : 15);   // fallback for non-playoff teams
+  const regularSeasonEnd = playoffStart - 1;
+
+  const maxWeek = !madePlayoffs
+    ? regularSeasonEnd
+    : matchups.some(m => m.game_type === 'fifth_place')
+      ? Math.max(...playoffGames.map(m => m.week))   // last game was 5th place
+      : 17;
 
   const visible = matchups.filter(m => m.week <= maxWeek);
   const left  = visible.filter(m => m.week <= 9).map(buildRow).join('');
