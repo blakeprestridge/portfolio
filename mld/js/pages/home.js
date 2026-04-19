@@ -75,11 +75,11 @@ function renderHero(champ, ownerMap) {
     <div style="display:flex;align-items:center;justify-content:center;gap:0.75rem;">
       <img src="images/trophy_icon.png" alt="Trophy" style="height:120px;width:auto;flex-shrink:0;" />
       <div style="display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;align-items:stretch;">
-        <div style="background:rgba(214, 219, 228, 0.7);border-radius:0.75rem;padding:1rem;display:flex;flex-direction:column;align-items:center;gap:0.5rem;min-width:110px;">
+        <a href="team.html?roster_id=${champ.roster_id}" class="team-link" style="background:rgba(214, 219, 228, 0.7);border-radius:0.75rem;padding:1rem;display:flex;flex-direction:column;align-items:center;gap:0.5rem;min-width:110px;">
           ${avatarImg(owner.avatar, owner.display_name, 64)}
           <div style="font-size:0.7rem;color:#6b7280;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">${esc(owner.display_name)}</div>
           <div style="font-family:'Roboto Condensed',sans-serif;font-weight:900;font-size:1.25rem;letter-spacing:0.08em;color:#0D0F11;">${esc(owner.team_name || owner.display_name)}</div>
-        </div>
+        </a>
         <div style="background:rgba(214, 219, 228, 0.7);border-radius:0.75rem;padding:1rem;display:flex;flex-direction:column;justify-content:center;gap:0.75rem;min-width:110px;">
           <div style="border-bottom:1px solid #b6b7c6;padding-bottom:0.5rem;">
             <div style="font-size:0.6rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#6b7280;">Record</div>
@@ -109,7 +109,7 @@ function renderChampions(champions, ownerMap) {
     el.innerHTML = champions.map(c => {
         const owner = getOwner(ownerMap, c.year, c.roster_id);
         return `
-      <div class="card card-hover p-4 flex flex-col items-center gap-2 text-center">
+      <a href="team.html?roster_id=${c.roster_id}" class="team-link card card-hover p-4 flex flex-col items-center gap-2 text-center">
         <span class="text-xs font-bold text-gold tracking-widest">${c.year}</span>
         ${avatarImg(owner.avatar, owner.display_name, 52)}
         <div>
@@ -118,7 +118,7 @@ function renderChampions(champions, ownerMap) {
         </div>
         <div class="text-xs font-semibold text-slate-600">${formatRecord(c.wins, c.losses, c.ties)}</div>
         <span class="badge badge-champion">&#127942; Champion</span>
-      </div>`;
+      </a>`;
     }).join('');
 }
 
@@ -147,29 +147,32 @@ function renderLeagueRecords(standings, matchups, ownerMap) {
         return margin > (best?.margin ?? 0) ? {...m, margin} : best;
     }, null);
 
+    const ownerLink = (rosterId, name) =>
+        `<a href="team.html?roster_id=${rosterId}" class="team-link">${esc(name)}</a>`;
+
     const records = [
         {
             label: 'Highest Single Score',
             value: topScore ? formatPts(topScore.points) + ' pts' : '—',
-            sub: topScore ? `${esc(getOwner(ownerMap, topScore.year, topScore.roster_id).display_name)} &bull; Wk&nbsp;${topScore.week} ${topScore.year}` : '',
+            sub: topScore ? `${ownerLink(topScore.roster_id, getOwner(ownerMap, topScore.year, topScore.roster_id).display_name)} &bull; Wk&nbsp;${topScore.week} ${topScore.year}` : '',
             icon: '&#9889;',
         },
         {
             label: 'Most Wins in a Season',
             value: topWins ? `${topWins.wins}-${topWins.losses}` : '—',
-            sub: topWins ? `${esc(topWins.display_name)} &bull; ${topWins.year}` : '',
+            sub: topWins ? `${ownerLink(topWins.roster_id, topWins.display_name)} &bull; ${topWins.year}` : '',
             icon: '&#127942;',
         },
         {
             label: 'Highest Season Total',
             value: topPF ? formatPts(topPF.points_for) + ' pts' : '—',
-            sub: topPF ? `${esc(topPF.display_name)} &bull; ${topPF.year}` : '',
+            sub: topPF ? `${ownerLink(topPF.roster_id, topPF.display_name)} &bull; ${topPF.year}` : '',
             icon: '&#128200;',
         },
         {
             label: 'Biggest Blowout',
             value: topBlowout ? `+${topBlowout.margin.toFixed(1)}` : '—',
-            sub: topBlowout ? `${esc(getOwner(ownerMap, topBlowout.year, topBlowout.roster_id).display_name)} &bull; Wk&nbsp;${topBlowout.week} ${topBlowout.year}` : '',
+            sub: topBlowout ? `${ownerLink(topBlowout.roster_id, getOwner(ownerMap, topBlowout.year, topBlowout.roster_id).display_name)} &bull; Wk&nbsp;${topBlowout.week} ${topBlowout.year}` : '',
             icon: '&#128293;',
         },
     ];
@@ -256,7 +259,7 @@ function renderRecentActivity(txns, ownerMap, txnMetaMap) {
                 return `
                 <div style="margin-bottom:0.5rem;">
                   <div style="font-size:0.75rem;font-weight:600;color:#0D0F11;margin-bottom:0.2rem;display:flex;align-items:center;gap:0.4rem;">
-                    ${avatarImg(owner.avatar, owner.display_name, 20)} <img src="images/trade_light_gray.png" alt="trade" style="width:18px;height:auto;flex-shrink:0;"> ${esc(owner.display_name)} receives:
+                    ${avatarImg(owner.avatar, owner.display_name, 20)} <img src="images/trade_light_gray.png" alt="trade" style="width:18px;height:auto;flex-shrink:0;"> <a href="team.html?roster_id=${side.roster_id}" class="team-link">${esc(owner.display_name)}</a> receives:
                   </div>
                   <div style="display:flex;flex-direction:column;gap:0.15rem;padding-left:0.5rem;">
                     ${side.adds.map(assetLine).join('') || '<div style="font-size:0.8rem;color:#94a3b8;">—</div>'}
@@ -273,7 +276,7 @@ function renderRecentActivity(txns, ownerMap, txnMetaMap) {
             headerHtml = `
               <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.4rem;">
                 <span style="font-size:0.8rem;font-weight:400;color:#0D0F11;display:inline-flex;align-items:center;gap:0.4rem;">
-                  ${avatarImg(owner.avatar, owner.display_name, 20)} <span style="font-weight:700;">${esc(owner.display_name)}</span> has made a
+                  ${avatarImg(owner.avatar, owner.display_name, 20)} <a href="team.html?roster_id=${side.roster_id}" class="team-link" style="font-weight:700;">${esc(owner.display_name)}</a> has made a
                   <span style="color:${typeColor};">${typeLabel}</span> move:
                 </span>
                 <span style="font-size:0.7rem;color:#94a3b8;">${dateStr}</span>

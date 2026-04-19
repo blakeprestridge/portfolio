@@ -7,6 +7,13 @@ function avatarUrl(hash) {
   return `https://sleepercdn.com/avatars/thumbs/${hash}`;
 }
 
+function ordinal(n) {
+  if (!n) return '';
+  const s = ['th','st','nd','rd'];
+  const v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
 function divChampBadge(division) {
   const div = (division || '').toLowerCase();
   if (div.includes('east')) return `<span class="badge badge-divchamp-east">East Champ</span>`;

@@ -109,13 +109,13 @@ function standingsRow(s, owner, rank, playoffsStarted = true) {
     <tr>
       <td class="text-slate-500 font-mono text-sm">${rank}</td>
       <td>
-        <div class="flex items-center gap-2">
+        <a href="team.html?roster_id=${s.roster_id}" class="team-link flex items-center gap-2">
           ${avatarImg(owner.avatar, owner.display_name, 32)}
           <div class="min-w-0">
             <div class="font-semibold truncate-name" style="color:#0D0F11;">${esc(owner.team_name || owner.display_name)}</div>
             <div class="text-xs text-slate-500 truncate-name">${esc(owner.display_name)}</div>
           </div>
-        </div>
+        </a>
       </td>
       <td class="font-semibold">${formatRecord(s.wins, s.losses, s.ties)}</td>
       <td class="hidden md:table-cell text-slate-400 font-mono text-sm">${winPct}</td>
@@ -143,13 +143,13 @@ function divisionTable(divName, rows, ownerMap, year, playoffsStarted = true) {
       <tr style="${cutoffStyle}">
         <td class="text-slate-500 font-mono text-sm">${s.division_rank ?? i + 1}</td>
         <td>
-          <div class="flex items-center gap-2">
+          <a href="team.html?roster_id=${s.roster_id}" class="team-link flex items-center gap-2">
             ${avatarImg(owner.avatar, owner.display_name, 32)}
             <div class="min-w-0">
               <div class="font-semibold truncate-name" style="color:#0D0F11;">${esc(owner.team_name || owner.display_name)}</div>
               <div class="text-xs text-slate-500 truncate-name">${esc(owner.display_name)}</div>
             </div>
-          </div>
+          </a>
         </td>
         <td class="font-semibold">${formatRecord(s.wins, s.losses, s.ties)}</td>
         <td class="font-mono text-sm">${formatPts(s.points_for)}</td>
@@ -181,13 +181,13 @@ function wildcardTableHtml(rows, ownerMap, year, playoffsStarted) {
       <tr style="${cutoffStyle}">
         <td class="text-slate-500 font-mono text-sm">${i + 1}</td>
         <td>
-          <div class="flex items-center gap-2">
+          <a href="team.html?roster_id=${s.roster_id}" class="team-link flex items-center gap-2">
             ${avatarImg(owner.avatar, owner.display_name, 32)}
             <div class="min-w-0">
               <div class="font-semibold truncate-name" style="color:#0D0F11;">${esc(owner.team_name || owner.display_name)}</div>
               <div class="text-xs text-slate-500 truncate-name">${esc(owner.display_name)}</div>
             </div>
-          </div>
+          </a>
         </td>
         <td class="font-semibold">${formatRecord(s.wins, s.losses, s.ties)}</td>
         <td class="font-mono text-sm">${formatPts(s.points_for)}</td>
@@ -350,10 +350,10 @@ function renderHistoricalGrid(standings, owners) {
     return `
       <tr>
         <td style="padding:0.4rem 1rem;white-space:nowrap;border-bottom:1px solid #e5e7eb;">
-          <div style="display:flex;align-items:center;gap:8px;">
+          <a href="team.html?roster_id=${lr.roster_id}" class="team-link" style="display:flex;align-items:center;gap:8px;">
             ${avatarImg(owner.avatar, owner.display_name, 24)}
             <span style="font-size:0.8rem;font-weight:600;color:#0D0F11;">${esc(owner.display_name)}</span>
-          </div>
+          </a>
         </td>
         ${cells}
       </tr>`;

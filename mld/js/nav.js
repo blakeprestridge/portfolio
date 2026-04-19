@@ -27,10 +27,10 @@ function renderNav(activePage) {
     if (p.id === 'teams') {
       return `
         <div class="nav-dropdown">
-          <button class="nav-link${active('teams') ? ' nav-link--active' : ''}"
-                  style="gap:5px;cursor:default;border:none;background:none;padding-right:0.5rem;">
+          <a href="teams.html" class="nav-link${active('teams') ? ' nav-link--active' : ''}"
+             style="gap:5px;">
             Teams ${CHEVRON_SVG}
-          </button>
+          </a>
           <div class="nav-dropdown-menu" id="teams-dropdown-menu">
             ${_teamsDropdownSkeleton()}
           </div>
@@ -122,13 +122,23 @@ async function _loadTeamsDropdown() {
 
     if (error || !owners?.length) return;
 
-    const desktopItems = owners.map(o => `
+    const desktopItems =
+      `<a href="teams.html" class="nav-dropdown-item" style="color:#6366f1;font-size:0.75rem;padding:0.3rem 0.625rem;">
+         All Teams &rarr;
+       </a>
+       <hr style="border:none;border-top:1px solid #e5e7eb;margin:4px 0;">` +
+      owners.map(o => `
       <a href="team.html?roster_id=${o.roster_id}" class="nav-dropdown-item">
         ${avatarImg(o.avatar, o.display_name, 22)}
         ${esc(o.display_name)}
       </a>`).join('');
 
-    const mobileItems = owners.map(o => `
+    const mobileItems =
+      `<a href="teams.html" class="nav-link"
+          style="display:flex;align-items:center;gap:8px;padding:0.3rem 0.5rem;font-size:0.78rem;justify-content:flex-start;color:#6366f1;">
+         All Teams &rarr;
+       </a>` +
+      owners.map(o => `
       <a href="team.html?roster_id=${o.roster_id}"
          class="nav-link"
          style="display:flex;align-items:center;gap:8px;padding:0.3rem 0.5rem;font-size:0.78rem;justify-content:flex-start;">
