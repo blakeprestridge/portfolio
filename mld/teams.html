@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teams — MLD</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
+
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body class="min-h-screen">
+
+  <div id="header-root"></div>
+  <div id="nav-root"></div>
+
+  <main class="page-container page-container--wide py-10">
+
+    <div class="mb-8">
+      <h1 class="text-3xl font-black uppercase tracking-tight">Teams</h1>
+      <p class="text-slate-500 text-sm mt-1">All 14 franchise managers — click any card to view full team history.</p>
+    </div>
+
+    <div id="teams-grid">
+      <!-- JS -->
+    </div>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/pages/teams.js"></script>
+
+</body>
+</html>

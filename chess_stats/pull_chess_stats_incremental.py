@@ -11,36 +11,48 @@ import chess.engine
 from pull_chess_stats import (
     get_conn, upsert_games, extract_eco, extract_final_clocks, format_clock, clock_to_seconds,
     normalize_termination, eco_to_opening, analyze_game_moves, build_move_classifications,
-    CHESS_USERNAME, ANALYZE_MOVES, ANALYSIS_DEPTH, STOCKFISH_PATH,
+    CHESS_USERNAME, ANALYSIS_DEPTH, STOCKFISH_PATH,
 )
+
+ANALYZE_MOVES = os.environ.get("ANALYZE_MOVES", "true").lower() == "true"
 
 HEADERS = {"User-Agent": "Chess Stats Fetcher/1.0 (Contact: aymoosay on Chess.com)"}
 
 
 def get_last_game_info(username):
-    sql = """
-        SELECT game_index, game_date, game_url, my_elo, rolling_elo
-        FROM chess_stats.games
-        WHERE username = %s
-        ORDER BY game_date DESC
-        LIMIT 1
-    """
     with get_conn() as conn:
         with conn.cursor() as cur:
-            cur.execute(sql, (username,))
+            # Last game overall for timestamp/index/rolling_elo
+            cur.execute("""
+                SELECT game_index, game_date, game_url, rolling_elo
+                FROM chess_stats.games
+                WHERE username = %s
+                ORDER BY game_date DESC
+                LIMIT 1
+            """, (username,))
             row = cur.fetchone()
 
-    if not row:
-        return None
+            if not row:
+                return None
 
-    game_index, game_date, game_url, my_elo, rolling_elo = row
+            game_index, game_date, game_url, rolling_elo = row
+
+            # Last rated elo per format
+            cur.execute("""
+                SELECT DISTINCT ON (format) format, my_elo
+                FROM chess_stats.games
+                WHERE username = %s AND rated = TRUE
+                ORDER BY format, game_date DESC
+            """, (username,))
+            previous_rating = {fmt: elo for fmt, elo in cur.fetchall()}
+
     last_timestamp = int(game_date.replace(tzinfo=timezone.utc).timestamp()
                          if game_date.tzinfo is None else game_date.timestamp())
 
     return {
         "game_index": game_index,
         "rolling_elo": rolling_elo,
-        "previous_rating": my_elo,
+        "previous_rating": previous_rating,
         "last_game_url": game_url,
         "last_timestamp": last_timestamp,
     }
@@ -90,8 +102,6 @@ def pull_chess_com_games_incremental(username=None, analyze_moves=None,
         games = response.json()["games"]
 
         for game in games:
-            if not game.get("rated", False):
-                continue
             if "white" not in game or "black" not in game:
                 continue
 
@@ -116,10 +126,15 @@ def pull_chess_com_games_incremental(username=None, analyze_moves=None,
             else:
                 my_result = "L"
 
+            is_rated = game.get("rated", False)
+            fmt = game.get("time_class", "")
             current_rating = me.get("rating", 0)
-            elo_delta = current_rating - previous_rating if previous_rating else 0
-            rolling_elo += elo_delta
-            previous_rating = current_rating
+            if is_rated:
+                elo_delta = current_rating - previous_rating[fmt] if fmt in previous_rating else 0
+                rolling_elo += elo_delta
+                previous_rating[fmt] = current_rating
+            else:
+                elo_delta = 0
             game_index += 1
 
             pgn = game.get("pgn", "")
@@ -154,6 +169,7 @@ def pull_chess_com_games_incremental(username=None, analyze_moves=None,
                 "opening": opening,
                 "eco": eco,
                 "time_trouble": time_trouble,
+                "rated": game.get("rated", False),
                 "rolling_elo": rolling_elo,
                 "username": username,
                 **mc,

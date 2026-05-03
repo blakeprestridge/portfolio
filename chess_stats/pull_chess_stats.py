@@ -7,18 +7,25 @@ import os
 import requests
 import re
 from datetime import datetime, timezone
+from pathlib import Path
 import chess
 import chess.pgn
 import chess.engine
 from io import StringIO
 import psycopg2
 import psycopg2.extras
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
+_local_stockfish = Path(__file__).parent / "stockfish" / "stockfish.exe"
+_default_stockfish = str(_local_stockfish) if _local_stockfish.exists() else "stockfish"
 
 CHESS_USERNAME = os.environ.get("CHESS_USERNAME", "aymoosay")
 TARGET_YEAR = os.environ.get("TARGET_YEAR", str(datetime.now().year))
-ANALYZE_MOVES = os.environ.get("ANALYZE_MOVES", "false").lower() == "true"
-ANALYSIS_DEPTH = int(os.environ.get("ANALYSIS_DEPTH", "20"))
-STOCKFISH_PATH = os.environ.get("STOCKFISH_PATH", "stockfish")
+ANALYZE_MOVES = os.environ.get("ANALYZE_MOVES", "true").lower() == "true"
+ANALYSIS_DEPTH = int(os.environ.get("ANALYSIS_DEPTH", "15"))
+STOCKFISH_PATH = os.environ.get("STOCKFISH_PATH", _default_stockfish)
 
 
 def get_conn():
@@ -74,7 +81,7 @@ def pull_chess_com_games(username=None, target_year=None, analyze_moves=None,
     rows = []
     game_index = 1
     rolling_elo = 0
-    previous_rating = None
+    previous_rating = {}  # keyed by format
 
     print(f"Fetching games for {username} in {target_year}...")
 
@@ -103,14 +110,15 @@ def pull_chess_com_games(username=None, target_year=None, analyze_moves=None,
             else:
                 my_result = "L"
 
+            fmt = game.get("time_class", "")
             current_rating = me.get("rating", 0)
-            if previous_rating is not None:
-                elo_delta = current_rating - previous_rating
+            if fmt in previous_rating:
+                elo_delta = current_rating - previous_rating[fmt]
                 rolling_elo += elo_delta
             else:
                 elo_delta = 0
                 rolling_elo = current_rating
-            previous_rating = current_rating
+            previous_rating[fmt] = current_rating
 
             pgn = game.get("pgn", "")
             termination = normalize_termination(pgn)
@@ -144,6 +152,7 @@ def pull_chess_com_games(username=None, target_year=None, analyze_moves=None,
                 "opening": opening,
                 "eco": eco,
                 "time_trouble": time_trouble,
+                "rated": game.get("rated", False),
                 "rolling_elo": rolling_elo,
                 "username": username,
                 **mc,
@@ -157,8 +166,12 @@ def pull_chess_com_games(username=None, target_year=None, analyze_moves=None,
     print(f"Found {len(rows)} rated games")
 
     if rows:
+        print("Truncating chess_stats.games...")
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("TRUNCATE TABLE chess_stats.games")
         upsert_games(rows)
-        print(f"Successfully upserted {len(rows)} games to Supabase")
+        print(f"Successfully loaded {len(rows)} games to Supabase")
 
 
 def build_move_classifications(move_classifications, is_white):
