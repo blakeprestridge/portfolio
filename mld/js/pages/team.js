@@ -501,7 +501,7 @@ function renderSkeletons() {
   document.getElementById('h2h-container').innerHTML =
     `<div class="card overflow-hidden"><table class="data-table"><tbody>${skeletonRows(10, 7)}</tbody></table></div>`;
   document.getElementById('draft-container').innerHTML =
-    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+    `<div class="mobile-responsive-grid">
        <div class="card overflow-hidden"><table class="data-table"><tbody>${skeletonRows(5, 3)}</tbody></table></div>
        <div class="card overflow-hidden"><table class="data-table"><tbody>${skeletonRows(5, 4)}</tbody></table></div>
      </div>`;
@@ -992,14 +992,14 @@ function renderRoster(players, week, displayYear, playerDetails, stats, statsYea
           ${_rosterExpanded ? 'Collapse' : 'Expand'}
         </button>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;">
-        <div style="overflow-x:auto;">
+      <div class="mobile-responsive-roster">
+        <div class="mobile-responsive-table">
           <table class="data-table">
             <thead><tr>${theadCols}</tr></thead>
             <tbody>${leftRows}</tbody>
           </table>
         </div>
-        <div style="border-left:1px solid #e5e7eb;overflow-x:auto;">
+        <div class="mobile-responsive-table">
           <table class="data-table">
             <thead><tr>${theadCols}</tr></thead>
             <tbody>${rightRows}</tbody>
@@ -1380,7 +1380,7 @@ function renderDraftPicks() {
   const noPastPicks    = !pastHtml;
 
   el.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start;">
+    <div class="mobile-responsive-grid">
       <div>
         <p style="font-size:0.7rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#94a3b8;margin-bottom:0.75rem;">Current Picks Owned</p>
         <div class="card overflow-hidden">

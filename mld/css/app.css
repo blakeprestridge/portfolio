@@ -466,6 +466,300 @@ h1, h2, h3, .display {
 }
 
 /* ------------------------------------------------------------------ */
+/* Mobile-responsive grids                                             */
+/* ------------------------------------------------------------------ */
+.mobile-responsive-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+.mobile-responsive-roster {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.mobile-responsive-table {
+    overflow-x: auto;
+}
+
+.mobile-responsive-table:last-child {
+    border-left: 1px solid #e5e7eb;
+}
+
+/* Mobile breakpoint */
+@media (max-width: 768px) {
+    .mobile-responsive-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .mobile-responsive-roster {
+        grid-template-columns: 1fr;
+    }
+
+    .mobile-responsive-table:last-child {
+        border-left: none;
+        border-top: 1px solid #e5e7eb;
+        margin-top: 1rem;
+        padding-top: 1rem;
+    }
+
+    /* Improve table readability on mobile */
+    .data-table {
+        font-size: 0.8rem;
+    }
+
+    .data-table thead th {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.65rem;
+    }
+
+    .data-table tbody td {
+        padding: 0.6rem 0.75rem;
+    }
+
+    /* Hide less critical columns on mobile */
+    .mobile-hide {
+        display: none;
+    }
+
+    /* Make section navigation scrollable on mobile */
+    #section-nav-root {
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .section-tab {
+        display: inline-block;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.7rem;
+    }
+
+    /* Homepage mobile optimizations */
+    .grid.grid-cols-3 {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+
+    .grid.grid-cols-2 {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+
+    /* Page container adjustments for mobile */
+    .page-container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .page-container--wide {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    /* Card spacing on mobile */
+    .card {
+        margin-bottom: 1rem;
+    }
+
+    /* Responsive text sizing */
+    h1 {
+        font-size: 2rem !important;
+    }
+
+    h2 {
+        font-size: 1.5rem !important;
+    }
+
+    /* Stat bar mobile layout */
+    .stat-bar {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    /* Navigation mobile optimization */
+    .nav-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    /* Team hero mobile layout */
+    .card.p-6 {
+        padding: 1rem !important;
+    }
+
+    /* Mobile navigation improvements */
+    #nav-root {
+        overflow-x: auto;
+    }
+}
+
+/* Tablet breakpoint */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .mobile-responsive-grid {
+        gap: 1.25rem;
+    }
+
+    .data-table {
+        font-size: 0.825rem;
+    }
+}
+
+/* ------------------------------------------------------------------ */
+/* NFL-style Draft Tracker                                             */
+/* ------------------------------------------------------------------ */
+
+/* Round filter horizontal scrolling */
+#round-filter {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+#round-filter::-webkit-scrollbar {
+    display: none; /* WebKit */
+}
+
+.round-filter-btn {
+    transition: all 0.2s ease;
+}
+
+.round-filter-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Draft picks table */
+.draft-picks-table {
+    /* No additional styles needed, using inline styles for clarity */
+}
+
+.draft-pick-row {
+    transition: background-color 0.15s ease;
+}
+
+.draft-pick-row:last-child {
+    border-bottom: none;
+}
+
+/* Player picture placeholder */
+.player-picture svg {
+    opacity: 0.5;
+}
+
+.modal-overlay {
+    backdrop-filter: blur(4px);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .draft-pick-row {
+        padding: 1rem 1.25rem !important;
+        gap: 1rem !important;
+    }
+
+    .pick-number {
+        min-width: 50px !important;
+    }
+
+    .pick-number div:first-child {
+        font-size: 1.1rem !important;
+    }
+
+    .owner-avatar img {
+        width: 44px !important;
+        height: 44px !important;
+    }
+
+    .player-picture > div {
+        width: 56px !important;
+        height: 56px !important;
+    }
+
+    .player-info {
+        margin-right: 0.5rem !important;
+    }
+
+    .player-info > div:first-child > div:first-child {
+        font-size: 1.05rem !important;
+    }
+
+    .player-info > div:last-child > div:first-child {
+        font-size: 0.8rem !important;
+    }
+
+    .position {
+        min-width: 60px !important;
+    }
+
+    .position .pos-badge {
+        font-size: 0.75rem !important;
+        padding: 0.3rem 0.5rem !important;
+    }
+
+    .nfl-team {
+        min-width: 70px !important;
+    }
+
+    .nfl-team div {
+        font-size: 0.8rem !important;
+    }
+
+    .round-filter-btn {
+        font-size: 0.75rem !important;
+        padding: 0.4rem 0.8rem !important;
+    }
+
+    .modal-content {
+        margin: 0.5rem !important;
+        padding: 1rem !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .draft-pick-row {
+        flex-wrap: wrap !important;
+        padding: 1rem !important;
+        gap: 0.75rem !important;
+    }
+
+    .pick-number {
+        order: 1;
+        min-width: 45px !important;
+    }
+
+    .owner-avatar {
+        order: 2;
+    }
+
+    .player-picture {
+        order: 3;
+    }
+
+    .player-info {
+        order: 4;
+        flex: 1 1 100% !important;
+        margin-top: 0.5rem !important;
+        margin-right: 0 !important;
+    }
+
+    .position {
+        order: 5;
+        margin-top: 0.5rem !important;
+        min-width: auto !important;
+    }
+
+    .nfl-team {
+        order: 6;
+        margin-top: 0.5rem !important;
+        margin-left: auto !important;
+        min-width: auto !important;
+        text-align: left !important;
+    }
+}
+
+/* ------------------------------------------------------------------ */
 /* Utility                                                             */
 /* ------------------------------------------------------------------ */
 .truncate-name {
@@ -473,4 +767,10 @@ h1, h2, h3, .display {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .truncate-name {
+        max-width: 120px;
+    }
 }

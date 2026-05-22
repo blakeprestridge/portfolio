@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:sleeper.com)",
+      "WebFetch(domain:www.nfl.com)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

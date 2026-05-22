@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Draft Room — MLD</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body class="min-h-screen">
+
+  <div id="header-root"></div>
+  <div id="nav-root"></div>
+
+  <main class="page-container page-container--wide py-10">
+
+    <!-- Page header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-black uppercase tracking-tight">Draft Room</h1>
+      <p class="text-slate-500 text-sm mt-1">Interactive draft board with pick-by-pick results.</p>
+    </div>
+
+    <!-- Season selector -->
+    <div id="season-selector" class="flex flex-wrap gap-2 mb-6">
+      <!-- JS -->
+    </div>
+
+    <!-- Draft info bar -->
+    <div id="draft-info" class="mb-6">
+      <!-- JS -->
+    </div>
+
+    <!-- Horizontal Round Filter -->
+    <div class="mb-6">
+      <div class="card" style="padding:1rem;overflow:hidden;">
+        <div id="round-filter" style="display:flex;gap:0.75rem;overflow-x:auto;padding-bottom:0.5rem;">
+          <!-- JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Draft Picks Table -->
+    <div id="draft-picks-container">
+      <!-- Loading skeleton -->
+      <div class="card">
+        <div style="padding:1.5rem;">
+          ${Array.from({length: 8}, (_, i) =>
+            `<div style="display:flex;align-items:center;gap:1rem;padding:1rem 0;border-bottom:1px solid #f3f4f6;">
+              <div class="skeleton" style="width:40px;height:20px;border-radius:4px;"></div>
+              <div class="skeleton" style="width:40px;height:40px;border-radius:50%;"></div>
+              <div class="skeleton" style="width:60px;height:60px;border-radius:8px;"></div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:0.5rem;">
+                <div class="skeleton" style="width:150px;height:20px;border-radius:4px;"></div>
+                <div class="skeleton" style="width:100px;height:16px;border-radius:4px;"></div>
+              </div>
+              <div class="skeleton" style="width:40px;height:20px;border-radius:4px;"></div>
+              <div class="skeleton" style="width:80px;height:16px;border-radius:4px;"></div>
+            </div>`
+          ).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Pick details modal placeholder -->
+    <div id="pick-modal" style="display:none;">
+      <!-- JS -->
+    </div>
+
+  </main>
+
+  <!-- ---------------------------------------------------------------- -->
+  <!-- Scripts                                                           -->
+  <!-- ---------------------------------------------------------------- -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/nav.js"></script>
+  <script src="js/pages/draft.js"></script>
+
+</body>
+</html>
